@@ -66,6 +66,6 @@ for novel_Id in novelId_List :
             val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Visitor,novel_Keyword,novel_Content)
             cursor.execute(sql,val)
             db.commit()
-    except(...):
+    except Exception:
         db.close()
 db.close()

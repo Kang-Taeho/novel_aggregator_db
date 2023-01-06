@@ -27,29 +27,90 @@ WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "/html/body
 time.sleep(2)
 
 page_index = 0
-novel_IdList = []
+novel_Id_Name_List = []
+
+#연재작 Id,Name 저장
 while True :
-    if page_index != 6 : page_index += 1
+    if page_index != 6 : page_index += 1 
 
     try : 
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="NOVELOUS-CONTENTS"]/section[4]/ul/li[{0}]'.format(page_index)))).click()
+        WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="NOVELOUS-CONTENTS"]/section[4]/ul/li[{0}]'.format(page_index)))).click()
         time.sleep(1)
 
         page_source = driver.page_source
         soup = BeautifulSoup(page_source,'html.parser')
 
         novels = soup.select_one('#SECTION-LIST > ul')
-        novel_Ids = novels.find_all('a',{'class' : 'title col-xs-6'})
-        for novel_Id in novel_Ids :
-            novel_Id = novel_Id['href']
+        novel_infos = novels.find_all('a',{'class' : 'title col-xs-6'})
+        for novel_info in novel_infos :
+            novel_Id = novel_info['href']
             novel_Id = novel_Id[ novel_Id.rfind('/')+1 : ]
-            novel_IdList.append(int(novel_Id))
-
+            novel_Name = novel_info['title']
+            novel_Id_Name_List.append((int(novel_Id),novel_Name))
+        break
     except Exception :
         break
-print(len(novel_IdList))
 
+#완결작 Id,Name 저장
+WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="SECTION-MENU"]/ul/li[2]/a'))).click()
+time.sleep(1)
 
+page_index = 0
+while True :
+    if page_index != 6 : page_index += 1 
 
+    try : 
+        WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="NOVELOUS-CONTENTS"]/section[4]/ul/li[{0}]'.format(page_index)))).click()
+        time.sleep(1)
+
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source,'html.parser')
+
+        novels = soup.select_one('#SECTION-LIST > ul')
+        novel_infos = novels.find_all('a',{'class' : 'title col-xs-6'})
+        for novel_info in novel_infos :
+            novel_Id = novel_info['href']
+            novel_Id = novel_Id[ novel_Id.rfind('/')+1 : ]
+            novel_Name = novel_info['title']
+            novel_Id_Name_List.append((int(novel_Id),novel_Name))
+        break
+    except Exception :
+        break
+
+db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
+try:
+    with db.cursor() as cursor :
+        for novel_Id, novel_Name in novel_Id_Name_List :
+            URL = 'https://novel.munpia.com/' + str(novel_Id)
+            driver.get(url=URL)
+
+            page_source = driver.page_source
+            soup = BeautifulSoup(page_source,'html.parser')
+
+            novel_Category = soup.find('strong').get_text().replace(' ','')
+
+            novel_Author = soup.find('dl',{'class' : 'meta-author meta'}).get_text().replace('글','').replace('\n','')
+            if '아카데미 작가' in novel_Author :
+                novel_Author = novel_Author[:novel_Author.find('아카데미 작가')]
+            elif '그림/삽화' in novel_Author :
+             novel_Author = novel_Author[:novel_Author.find('그림/삽화')]
+
+            novel_Visitor = soup.find('dl',{'class' : 'meta-etc meta','style' : 'letter-spacing:-0.2px;padding-bottom: 10px;'}).get_text().replace('\n','')
+            novel_Visitor = novel_Visitor[novel_Visitor.find('조회수 :')+5 : novel_Visitor.find('추천수')].replace(',','')
+
+            novel_Content = soup.find('p',{'class' : 'story'}).get_text().replace('\n','')
+
+            novel_Keyword = soup.find('div',{'class' : 'tag-list expand'})
+            if novel_Keyword is not None :
+                novel_Keyword = novel_Keyword.get_text().replace('\n','')
+
+            sql = """INSERT INTO munpia_product(id,title,author,category,visitor,keyword,content)
+                                    VALUES (%s,%s,%s,%s,%s,,%s,%s)
+            """
+            val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Visitor,novel_Keyword,novel_Content)
+            cursor.execute(sql,val)
+            db.commit()
+finally :
+    db.close()
 
 
