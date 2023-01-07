@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 #카카오페이지 판타지 등록순
@@ -16,28 +15,33 @@ options.add_experimental_option("excludeSwitches",["enable-logging"])
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
 driver.get(url=URL)
 
+#mysql
 db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
 try:
     with db.cursor() as cursor:
         cursor.execute("SELECT COUNT(id) FROM kakaopage_product")
-        db_total_productNum = cursor.fetchone()[0]
-except(...):
+        db_productNum = cursor.fetchone()[0]
+except Exception :
     print("sql문 SELECT COUNT(id) FROM kakaopage_product 오류")
+finally :
+    db.close()
         
 #스크롤 끝까지 내리기
-prev_height = driver.execute_script("return document. body.scrollHeight")
+prev_height = driver.execute_script("return document.body.scrollHeight")
 while True:
     driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
     time.sleep(1)
 
-    current_height = driver.execute_script("return document. body.scrollHeight")
+    current_height = driver.execute_script("return document.body.scrollHeight")
     
     if current_height == prev_height :
-        break
+        time.sleep(1)
+        current_height = driver.execute_script("return document.body.scrollHeight")
+        if prev_height == current_height :
+            break
     prev_height = current_height
 
-#스크래핑
-#   작품id, visitor
+# (신작 작품 여부, novel_Id, novel_Visitor) tuple 저장
 page_source = driver.page_source
 soup = BeautifulSoup(page_source,'html.parser')
 
@@ -48,7 +52,6 @@ novel_Number = int(novel_Number.replace(',','').replace('개',''))
 for num in range(1, novel_Number + 1) :
 
     novel = soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.grow.flex-col.py-10pxr.px-15pxr > div > div > div > div:nth-child({0}) > div > a > div'.format(num))
-    
     raw_data_str =novel['data-t-obj']
     novel_Id = raw_data_str[raw_data_str.rfind('"id":"')+6:raw_data_str.find('","name')]
 
@@ -59,15 +62,15 @@ for num in range(1, novel_Number + 1) :
     novel_Visitor = novel_Visitor.replace(',','').replace('만','').replace('억','')
     novel_Visitor = float(novel_Visitor) * mul
 
-    if num > (novel_Number - db_total_productNum) : novelList_id_visitor.append((False,int(novel_Id),int(novel_Visitor)))
-    else : novelList_id_visitor.append((True,int(novel_Id),int(novel_Visitor)))
+    if num > (novel_Number - db_productNum) : novelList_id_visitor.append((False,int(novel_Id),novel_Visitor))
+    else : novelList_id_visitor.append((True,int(novel_Id),novel_Visitor))
     mul = 1
     
 #   title, category, author, keyword, content
 try:
     with db.cursor() as cursor :
         for new_work, novel_Id, novel_Visitor in novelList_id_visitor :
-            if new_work :
+            if not new_work :
                 sql = """UPDATE kakaopage_product 
                         SET visitor=%s
                         WHERE id=%s 
@@ -77,12 +80,11 @@ try:
                 db.commit()
                 continue
 
-            URL_Content = "https://page.kakao.com/content/" + str(novel_Id) + "?tab_type=about"
+            URL_content = "https://page.kakao.com/content/" + str(novel_Id) + "?tab_type=about"
 
-            driver_contnet = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
-            driver_contnet.get(url=URL_Content)
+            driver.get(url=URL_content)
              
-            page_source = driver_contnet.page_source
+            page_source = driver.page_source
             soup_content = BeautifulSoup(page_source,'html.parser')
     
             novel_Name = soup_content.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div.flex.h-full.flex-1 > div.mb-28pxr.flex.w-320pxr.flex-col > div:nth-child(1) > div.w-320pxr.css-0 > div > div.css-0 > div.relative.text-center.mx-32pxr.py-24pxr > span').get_text()
