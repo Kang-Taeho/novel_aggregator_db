@@ -47,7 +47,6 @@ while True :
             novel_Id = novel_Id[ novel_Id.rfind('/')+1 : ]
             novel_Name = novel_info['title']
             novel_Id_Name_List.append((int(novel_Id),novel_Name))
-        break
     except Exception :
         break
 
@@ -73,13 +72,17 @@ while True :
             novel_Id = novel_Id[ novel_Id.rfind('/')+1 : ]
             novel_Name = novel_info['title']
             novel_Id_Name_List.append((int(novel_Id),novel_Name))
-        break
     except Exception :
         break
 
+#db 저장
 db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
 try:
     with db.cursor() as cursor :
+        sql = "SELECT id FROM munpia_product"
+        cursor.execute(sql)
+        db_novel = cursor.fetchall()
+
         for novel_Id, novel_Name in novel_Id_Name_List :
             URL = 'https://novel.munpia.com/' + str(novel_Id)
             driver.get(url=URL)
@@ -87,27 +90,36 @@ try:
             page_source = driver.page_source
             soup = BeautifulSoup(page_source,'html.parser')
 
-            novel_Category = soup.find('strong').get_text().replace(' ','')
-
-            novel_Author = soup.find('dl',{'class' : 'meta-author meta'}).get_text().replace('글','').replace('\n','')
-            if '아카데미 작가' in novel_Author :
-                novel_Author = novel_Author[:novel_Author.find('아카데미 작가')]
-            elif '그림/삽화' in novel_Author :
-             novel_Author = novel_Author[:novel_Author.find('그림/삽화')]
-
             novel_Visitor = soup.find('dl',{'class' : 'meta-etc meta','style' : 'letter-spacing:-0.2px;padding-bottom: 10px;'}).get_text().replace('\n','')
             novel_Visitor = novel_Visitor[novel_Visitor.find('조회수 :')+5 : novel_Visitor.find('추천수')].replace(',','')
 
-            novel_Content = soup.find('p',{'class' : 'story'}).get_text().replace('\n','')
+            if (novel_Id,) in db_novel :
+                print("포함")
+                sql = """UPDATE munpia_product
+                            SET visitor=%s
+                            WHERE id=%s"""
+                val = (novel_Visitor,novel_Id)
+            else :
+                novel_Category = soup.find('strong').get_text().replace(' ','')
 
-            novel_Keyword = soup.find('div',{'class' : 'tag-list expand'})
-            if novel_Keyword is not None :
-                novel_Keyword = novel_Keyword.get_text().replace('\n','')
+                novel_Author = soup.find('dl',{'class' : 'meta-author meta'}).get_text().replace('글','').replace('\n','')
+                if '아카데미 작가' in novel_Author :
+                    novel_Author = novel_Author[:novel_Author.find('아카데미 작가')]
+                elif '그림/삽화' in novel_Author :
+                    novel_Author = novel_Author[:novel_Author.find('그림/삽화')]
 
-            sql = """INSERT INTO munpia_product(id,title,author,category,visitor,keyword,content)
-                                    VALUES (%s,%s,%s,%s,%s,,%s,%s)
-            """
-            val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Visitor,novel_Keyword,novel_Content)
+                novel_Visitor = soup.find('dl',{'class' : 'meta-etc meta','style' : 'letter-spacing:-0.2px;padding-bottom: 10px;'}).get_text().replace('\n','')
+                novel_Visitor = novel_Visitor[novel_Visitor.find('조회수 :')+5 : novel_Visitor.find('추천수')].replace(',','')
+
+                novel_Content = soup.find('p',{'class' : 'story'}).get_text().replace('\n','')
+
+                novel_Keyword = soup.find('div',{'class' : 'tag-list expand'})
+                if novel_Keyword is not None :
+                    novel_Keyword = novel_Keyword.get_text().replace('\n','')
+
+                sql = """INSERT INTO munpia_product(id,title,author,category,visitor,keyword,content)
+                                    VALUES (%s,%s,%s,%s,%s,%s,%s)"""
+                val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Visitor,novel_Keyword,novel_Content)
             cursor.execute(sql,val)
             db.commit()
 finally :
