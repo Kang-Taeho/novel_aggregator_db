@@ -90,6 +90,9 @@ try:
             novel_Name = soup_content.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div.flex.h-full.flex-1 > div.mb-28pxr.flex.w-320pxr.flex-col > div:nth-child(1) > div.w-320pxr.css-0 > div > div.css-0 > div.relative.text-center.mx-32pxr.py-24pxr > span')
             if novel_Name is not None :
                 novel_Name = novel_Name.get_text()
+                if "[단행본]" in novel_Name :
+                    #단행본 중복 해결
+                    continue
             else :
             #15세 이상 작품 스크래핑 불가
                 continue
