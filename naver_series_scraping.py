@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
-#네이버 시리즈 독점,판타지 판매
+#네이버 시리즈 독점,판타지 판매순
 URL = 'https://series.naver.com/search/search.series?t=novel&q=%EB%8F%85%EC%A0%90%2C%ED%8C%90%ED%83%80%EC%A7%80&so=selling.dsc&page=1'
 
 options = webdriver.ChromeOptions()
@@ -18,26 +18,26 @@ driver.get(url=URL)
 page_source = driver.page_source
 soup = BeautifulSoup(page_source,'html.parser')
 
-total_novelProduct = soup.select_one('#content > div.com_srch > div.lst_header > h3').get_text()
-total_novelProduct = int(total_novelProduct.replace('웹소설','').replace('(','').replace(')','').replace('\n',''))
+total_novelNum = soup.select_one('#content > div.com_srch > div.lst_header > h3').get_text()
+total_novelNum = int(total_novelNum.replace('웹소설','').replace('(','').replace(')','').replace('\n',''))
 
 #novel_Id 리스트
 novel_IdList = []
-for page_num in range(1,int(total_novelProduct/25) + 2) :
+for page_num in range(1,int(total_novelNum/25) + 2) :
     URL = 'https://series.naver.com/search/search.series?t=novel&q=%EB%8F%85%EC%A0%90%2C%ED%8C%90%ED%83%80%EC%A7%80&so=selling.dsc&page=' + str(page_num)
     driver.get(url=URL)
 
     page_source = driver.page_source
     soup = BeautifulSoup(page_source,'html.parser')
 
-    if page_num != (int(total_novelProduct/25) + 1) :
+    if page_num != (int(total_novelNum/25) + 1) :
         for num in range(1,26) :
             novel_Id = soup.select_one('#content > div.com_srch > div.bs > ul > li:nth-child({0}) > div > h3 > a'.format(num))['href']
             novel_Id = novel_Id[novel_Id.find('productNo=')+10:]
             novel_IdList.append(int(novel_Id))
                         
     else :
-        for num in range(1,(total_novelProduct%25) +1) :
+        for num in range(1,(total_novelNum%25) +1) :
             novel_Id = soup.select_one('#content > div.com_srch > div.bs > ul > li:nth-child({0}) > div > h3 > a'.format(num))['href']
             novel_Id = novel_Id[novel_Id.find('productNo=')+10:]
             novel_IdList.append(int(novel_Id))
