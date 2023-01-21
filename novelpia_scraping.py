@@ -6,6 +6,10 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+#2개 전역변수 일정 기간 후 마다 변경 필수!
+CHILD_NUM1 = 47
+CHILD_NUM2 = 48
+ 
 #노벨피아 판타지 조회순
 URL = 'https://novelpia.com/plus/all/view/1/?main_genre=1'
 
@@ -23,7 +27,7 @@ total_novelProduct = int(total_novelProduct[total_novelProduct.find("총 ")+2 : 
 novel_infoList = []
 
 #모든 페이지 novel id,novel_book,novel_visitor 저장
-for page_num in range(1,2) : #int(total_novelProduct/30)+2
+for page_num in range(1,4) : #int(total_novelProduct/30)+2
     URL = 'https://novelpia.com/plus/all/view/'+str(page_num)+'/?main_genre=1'
     driver.get(url=URL)
     page_source = driver.page_source
@@ -70,23 +74,26 @@ try:
                 page_source = driver.page_source
                 soup = BeautifulSoup(page_source,'html.parser')
 
-                child_num = 46
+                child_num = CHILD_NUM1
                 
                 novel_Name = soup.select_one('body > div:nth-child({0}) > div.mobile_hidden.s_inv > div > div > table > tbody > tr:nth-child(1) > td:nth-child(2) > span:nth-child(1)'.format(child_num))
                 if novel_Name is None :
-                    child_num = 47
+                    child_num = CHILD_NUM2
                     novel_Name = soup.select_one('body > div:nth-child({0}) > div.mobile_hidden.s_inv > div > div > table > tbody > tr:nth-child(1) > td:nth-child(2) > span:nth-child(1)'.format(child_num))
                 novel_Name = novel_Name.get_text()
                 novel_Author = soup.select_one('body > div:nth-child({0}) > div.mobile_hidden.s_inv > div > div > table > tbody > tr:nth-child(1) > td:nth-child(2) > font:nth-child(5) > a'.format(child_num)).get_text()
                 novel_Category = "판타지"
+                novel_Age = soup.select_one('body > div:nth-child({0}) > div.mobile_hidden.s_inv > div > div > table > tbody > tr:nth-child(1) > td:nth-child(2)'.format(child_num)).get_text()
+                if "15" in novel_Age : novel_Age = 15
+                else : novel_Age = 0 
 
                 novel_info = soup.select_one('body > div:nth-child({0}) > div.mobile_hidden.s_inv > div > div > table > tbody > tr:nth-child(2) > td > div'.format(child_num)).get_text()
                 novel_Keyword = novel_info[novel_info.rfind('작가태그 :')+6:novel_info.rfind('나만의태그 :')].strip().replace(' ','')
                 novel_Content = novel_info[novel_info.find('회\n')+2:novel_info.rfind('작가태그 :')].strip()
 
-                sql = """INSERT INTO novelpia_product(id,title,author,category,visitor,keyword,content)
+                sql = """INSERT INTO novelpia_product(id,title,author,category,age_gt,visitor,keyword,content)
                                      VALUES (%s,%s,%s,%s,%s,%s,%s)"""
-                val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Visitor,novel_Keyword,novel_Content)
+                val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Age,novel_Visitor,novel_Keyword,novel_Content)
             
             cursor.execute(sql,val)
             db.commit()
