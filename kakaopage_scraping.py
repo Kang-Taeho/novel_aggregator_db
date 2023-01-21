@@ -53,13 +53,13 @@ for num in range(1, novel_Number + 1) :
 
     novel_info = soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.grow.flex-col.py-10pxr.px-15pxr > div > div > div > div:nth-child({0}) > div > a > div > div.relative > div.absolute.top-4pxr.right-4pxr.flex.space-x-2pxr'.format(num))
     if novel_info is None :
-        age_15gt = False
+        age_15gt = 0
     else :
         age_15gt = novel_info.select_one('img',{'class':'alt'})['alt']
         if age_15gt == '15세 뱃지' :
-            age_15gt = True
+            age_15gt = 15
         else :
-            age_15gt = False
+            age_15gt = 0
 
     novel_info = soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.grow.flex-col.py-10pxr.px-15pxr > div > div > div > div:nth-child({0}) > div > a > div'.format(num))['data-t-obj']
     novel_Id = novel_info[novel_info.find('"id":"')+6 : novel_info.find('","name')]
@@ -92,9 +92,9 @@ try:
                 continue
             
             if age_15gt :
-                sql = """INSERT INTO kakaopage_product(id,title,category,visitor)
+                sql = """INSERT INTO kakaopage_product(id,title,category,age_gt,visitor)
                             VALUES(%s,%s,%s,%s)"""
-                val = (novel_Id, novel_Name, "판타지", novel_Visitor)
+                val = (novel_Id, novel_Name, "판타지", age_15gt, novel_Visitor)
             else :
                 URL_content = "https://page.kakao.com/content/" + str(novel_Id) + "?tab_type=about"
 
@@ -113,8 +113,8 @@ try:
                     novel_Keyword = None
                 
                 sql = """INSERT INTO kakaopage_product(id,title,author,category,visitor,keyword,content)
-                            VALUES(%s,%s,%s,%s,%s,%s,%s)"""
-                val = (novel_Id, novel_Name, novel_Author, "판타지", novel_Visitor, novel_Keyword, novel_Content)
+                            VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"""
+                val = (novel_Id, novel_Name, novel_Author, "판타지", age_15gt, novel_Visitor, novel_Keyword, novel_Content)
             
             cursor.execute(sql,val)
             db.commit()
