@@ -92,8 +92,8 @@ try:
                             VALUES (%s,%s,%s,%s,%s,%s)"""
                 val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Age,novel_Likeit,novel_Content)
 
-            # cursor.execute(sql,val)
-            # db.commit()
+            cursor.execute(sql,val)
+            db.commit()
 
 
 finally:
