@@ -91,7 +91,16 @@ try:
                 db.commit()
                 continue
             
-            if age_15gt :
+            if "[단행본]" in novel_Name :
+                sql = """INSERT INTO kakaopage_product(id,title,category,age_gt,visitor)
+                            VALUES(%s,%s,%s,%s)"""
+                val = (novel_Id, novel_Name, "판타지", age_15gt, novel_Visitor)
+
+                cursor.execute(sql,val)
+                db.commit()
+                continue
+            
+            if age_15gt == 15 :
                 sql = """INSERT INTO kakaopage_product(id,title,category,age_gt,visitor)
                             VALUES(%s,%s,%s,%s)"""
                 val = (novel_Id, novel_Name, "판타지", age_15gt, novel_Visitor)
