@@ -10,7 +10,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
-
 #문피아 선독점 (판타지, 새작품순)
 URL = 'https://novel.munpia.com/page/hd.platinum/group/pl.serial/exclusive/true/view/allend'
 
