@@ -23,7 +23,7 @@ total_novelNum = int(total_novelNum.replace('웹소설','').replace('(','').repl
 
 #novel_Id 리스트
 novel_IdList = []
-for page_num in range(1,int(total_novelNum/25) + 2) :
+for page_num in range(1, int(total_novelNum/25) + 2) : 
     URL = 'https://series.naver.com/search/search.series?t=novel&q=%EB%8F%85%EC%A0%90%2C%ED%8C%90%ED%83%80%EC%A7%80&so=selling.dsc&page=' + str(page_num)
     driver.get(url=URL)
 
@@ -76,6 +76,11 @@ try:
                 novel_Author = soup.select_one('#content > ul.end_info.NE\=a\:nvi > li > ul > li:nth-child(3) > a').get_text()
                 novel_Category = soup.select_one('#content > ul.end_info.NE\=a\:nvi > li > ul > li:nth-child(2) > span > a').get_text()
                 novel_Likeit = soup.select_one('#content > div.end_head > div.user_action_area > ul > li:nth-child(2) > div > a > em').get_text().replace(',','')
+                novel_Age = soup.select_one('#content > ul.end_info.NE\=a\:nvi > li > ul > li:nth-child(5)').get_text()
+                if '이용가' not in novel_Age :
+                    novel_Age = soup.select_one('#content > ul.end_info.NE\=a\:nvi > li > ul > li:nth-child(6)').get_text()
+                if novel_Age == '15세 이용가' : novel_Age = 15
+                elif novel_Age == '전체 이용가' : novel_Age = 0
                 novel_Content = soup.select_one('#content > div.end_dsc > div:nth-child(2)')
                 if novel_Content is None :
                     novel_Content = soup.select_one('#content > div.end_dsc > div').get_text()
@@ -83,12 +88,12 @@ try:
                     novel_Content = novel_Content.get_text()
                 novel_Content = novel_Content.replace('접기','').strip()
 
-                sql = """INSERT INTO naver_series_product(id,title,author,category,likeit,content)
+                sql = """INSERT INTO naver_series_product(id,title,author,category,age_gt,likeit,content)
                             VALUES (%s,%s,%s,%s,%s,%s)"""
-                val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Likeit,novel_Content)
+                val = (novel_Id,novel_Name,novel_Author,novel_Category,novel_Age,novel_Likeit,novel_Content)
 
-            cursor.execute(sql,val)
-            db.commit()
+            # cursor.execute(sql,val)
+            # db.commit()
 
 
 finally:
