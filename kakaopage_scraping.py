@@ -53,13 +53,13 @@ for num in range(1, novel_Number + 1) :
 
     novel_info = soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.grow.flex-col.py-10pxr.px-15pxr > div > div > div > div:nth-child({0}) > div > a > div > div.relative > div.absolute.top-4pxr.right-4pxr.flex.space-x-2pxr'.format(num))
     if novel_info is None :
-        age_15gt = 0
+        novel_Age = 0
     else :
         age_15gt = novel_info.select_one('img',{'class':'alt'})['alt']
         if age_15gt == '15세 뱃지' :
-            age_15gt = 15
+            novel_Age = 15
         else :
-            age_15gt = 0
+            novel_Age = 0
 
     novel_info = soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.grow.flex-col.py-10pxr.px-15pxr > div > div > div > div:nth-child({0}) > div > a > div'.format(num))['data-t-obj']
     novel_Id = novel_info[novel_info.find('"id":"')+6 : novel_info.find('","name')]
@@ -73,14 +73,14 @@ for num in range(1, novel_Number + 1) :
     novel_Visitor = novel_Visitor.replace(',','').replace('만','').replace('억','')
     novel_Visitor = float(novel_Visitor) * mul
 
-    if num > (novel_Number - db_productNum) : novelList_id_visitor.append((False,age_15gt,int(novel_Id),novel_Name,novel_Visitor))
-    else : novelList_id_visitor.append((True,age_15gt,int(novel_Id),novel_Name,novel_Visitor))
+    if num > (novel_Number - db_productNum) : novelList_id_visitor.append((False,novel_Age,int(novel_Id),novel_Name,novel_Visitor))
+    else : novelList_id_visitor.append((True,novel_Age,int(novel_Id),novel_Name,novel_Visitor))
     mul = 1
     
 #   title, category, author, keyword, content
 try:
     with db.cursor() as cursor :
-        for new_work, age_15gt, novel_Id, novel_Name, novel_Visitor in novelList_id_visitor :
+        for new_work, novel_Age, novel_Id, novel_Name, novel_Visitor in novelList_id_visitor :
             if not new_work :
                 sql = """UPDATE kakaopage_product 
                         SET visitor=%s
@@ -94,16 +94,16 @@ try:
             if "[단행본]" in novel_Name :
                 sql = """INSERT INTO kakaopage_product(id,title,category,age_gt,visitor)
                             VALUES(%s,%s,%s,%s)"""
-                val = (novel_Id, novel_Name, "판타지", age_15gt, novel_Visitor)
+                val = (novel_Id, novel_Name, "판타지", novel_Age, novel_Visitor)
 
                 cursor.execute(sql,val)
                 db.commit()
                 continue
             
-            if age_15gt == 15 :
+            if novel_Age == 15 :
                 sql = """INSERT INTO kakaopage_product(id,title,category,age_gt,visitor)
                             VALUES(%s,%s,%s,%s)"""
-                val = (novel_Id, novel_Name, "판타지", age_15gt, novel_Visitor)
+                val = (novel_Id, novel_Name, "판타지", novel_Age, novel_Visitor)
             else :
                 URL_content = "https://page.kakao.com/content/" + str(novel_Id) + "?tab_type=about"
 
@@ -123,7 +123,7 @@ try:
                 
                 sql = """INSERT INTO kakaopage_product(id,title,author,category,visitor,keyword,content)
                             VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"""
-                val = (novel_Id, novel_Name, novel_Author, "판타지", age_15gt, novel_Visitor, novel_Keyword, novel_Content)
+                val = (novel_Id, novel_Name, novel_Author, "판타지", novel_Age, novel_Visitor, novel_Keyword, novel_Content)
             
             cursor.execute(sql,val)
             db.commit()
