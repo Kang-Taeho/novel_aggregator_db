@@ -93,7 +93,6 @@ try:
             novel_Visitor = novel_Visitor[novel_Visitor.find('조회수 :')+5 : novel_Visitor.find('추천수')].replace(',','')
 
             if (novel_Id,) in db_novel :
-                print("포함")
                 sql = """UPDATE munpia_product
                             SET visitor=%s
                             WHERE id=%s"""
