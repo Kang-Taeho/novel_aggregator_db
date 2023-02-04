@@ -1,136 +1,71 @@
 import pymysql
-import time
 from bs4 import BeautifulSoup
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
 
-# 카카오페이지 판타지 등록순
-URL = "https://page.kakao.com/menu/11/screen/37?subcategory_uid=86&sort_opt=latest"
+sep = "@#$"
 
+# 작품 페이지에서 세부 정보 추출 및 db 저장
+# 파일 저장 정보 :  1.15세 뱃지 여부    2.소설 번호     3.소설 제목     4.소설 열람수
+# DB 저장 정보 : id title author order category age_gt visitor keyword content
 options = webdriver.ChromeOptions()
 options.add_experimental_option("excludeSwitches",["enable-logging"])
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
-driver.get(url=URL)
 
-# mysql 저장된 소설 수 가져오기
-db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
-try:
-    with db.cursor() as cursor:
-        cursor.execute("SELECT COUNT(id) FROM kakaopage_product")
-        db_productNum = cursor.fetchone()[0]
-except Exception :
-    print("SELECT COUNT(id) FROM kakaopage_product 오류")
-finally :
-    db.close()
-
-print("db 소설 수 가져오기 완료")
-# # 스크롤 끝까지 내리기
-prev_height = driver.execute_script("return document.body.scrollHeight")
-while True:
-    scroll_pos = driver.find_element(By.TAG_NAME,'body')
-    scroll_pos.send_keys(Keys.PAGE_DOWN)
-    scroll_pos.send_keys(Keys.PAGE_DOWN)
-    time.sleep(2)
-    current_height = driver.execute_script("return document.body.scrollHeight")
-    
-    if current_height == prev_height :
-        scroll_pos.send_keys(Keys.PAGE_DOWN)
-        scroll_pos.send_keys(Keys.PAGE_DOWN)
-        time.sleep(4)
-        current_height = driver.execute_script("return document.body.scrollHeight")
-
-        if prev_height == current_height :
-            break
-
-    prev_height = current_height
-
-print("스크롤 끝까지 내리기 완료")
-# 작품 전체 페이지에서 정보 추출
-# 1.db 저장된 소설 여부      2.15세 뱃지 여부    3.소설 번호     4.소설 제목     5.소설 열람수
-WebDriverWait(driver,5).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.h-44pxr.w-full.flex-row.items-center.justify-between.bg-bg-a-10.px-15pxr > div.flex.h-full.flex-1.items-center.space-x-8pxr > span')))
-
-page_source = driver.page_source
-soup = BeautifulSoup(page_source,'html.parser')
-
-novel_Number = soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.h-44pxr.w-full.flex-row.items-center.justify-between.bg-bg-a-10.px-15pxr > div.flex.h-full.flex-1.items-center.space-x-8pxr > span').get_text()
-novel_Number = int(novel_Number.replace(',','').replace('개',''))
-
-novel_info_List = []
-novel_infos = soup.select('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.grow.flex-col.py-10pxr.px-15pxr > div > div > div > div')
-iter_num = 0
-
-for novel_info in novel_infos :
-    iter_num += 1
-    if iter_num > (novel_Number - db_productNum) : new_work = False
-    else : new_work = True
-
-    age_15gt =  0
-    for badge in novel_info.select('img',{'class':'alt'}):
-        if badge['alt'] == "15세 뱃지" : age_15gt = 15
-    
-    novel_Id = novel_info.select_one('a')['href']
-    novel_Id = novel_Id[novel_Id.rfind('/')+1:]
-
-    novel_Visitor =  novel_info.select_one('span').get_text()
-    novel_Name = novel_info.get_text().replace(novel_Visitor,'').replace('[연재]','').replace('[완결]','').strip()
-
-    mul = 1
-    if '만' in novel_Visitor : mul *= 10000
-    if '억' in novel_Visitor : mul *= 100000000
-    novel_Visitor = novel_Visitor.replace(',','').replace('만','').replace('억','')
-    novel_Visitor = int(float(novel_Visitor) * mul)
-
-    novel_info_List.append((new_work, age_15gt, novel_Id, novel_Name, novel_Visitor))
-
-print("전체 페이지 스크래핑 완료")
-# 작품 페이지에서 세부 정보 추출 및 db 저장
-# 1.db 저장된 소설 여부      2.15세 뱃지 여부    3.소설 번호     4.소설 제목     5.소설 열람수
-# 6.소설 작가       7.내용      8.키워드
+f_List = open('kakaopage_product.txt','r',encoding='utf-8').readlines()
+db_last_novelId = f_List[0].strip()
+del(f_List[0])
 
 db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
+novel_Order = 0
+skip_novel = False
 try :
-    for new_work, age_15gt, novel_Id, novel_Name, novel_Visitor in novel_info_List :
+    for f_str in f_List :
+        novel_Order += 1
+
+        f_str = f_str.strip().split(sep)
+        age_15gt = f_str[0]
+        novel_Id = int(f_str[1])
+        novel_Name = f_str[2]
+        novel_Visitor = int(f_str[3])
+
         with db.cursor() as cursor :
-            #db 저장된 소설
-            if not new_work :
-                sql = """UPDATE kakaopage_product 
-                            SET visitor=%s
-                            WHERE id=%s 
-                            """
-                val = (novel_Visitor,novel_Id)
-                cursor.execute(sql,val)
-                db.commit()
-                continue
-            
-            #중복된 소설
-            if "[단행본]" in novel_Name :
-                sql = """INSERT INTO kakaopage_product(id,title,category,age_gt,visitor)
-                            VALUES(%s,%s,%s,%s,%s)"""
-                val = (novel_Id, novel_Name, "판타지", age_15gt, novel_Visitor)
+            # 저장된 소설 visitor 업데이트만 진행
+            if novel_Id == 61137409 or skip_novel :
+                skip_novel = True
+                sql = """UPDATE kakaopage_product
+                            SET title=%s, visitor=%s
+                            WHERE id=%s
+                        """
+                val = (novel_Name,novel_Visitor,novel_Id)
 
                 cursor.execute(sql,val)
                 db.commit()
                 continue
-            
-            # 개선점 : kakaopage 로그인 필요( 보안 문제 )
-            if age_15gt == 15 :
-                sql = """INSERT INTO kakaopage_product(id,title,category,age_gt,visitor)
-                            VALUES(%s,%s,%s,%s,%s)"""
-                val = (novel_Id, novel_Name, "판타지", age_15gt, novel_Visitor)
+
+            # 문제점 : 15세 이상 작품 kakaopage 로그인 필요( 보안 문제 )
+            if age_15gt == "True" :
+                sql = """INSERT INTO kakaopage_product(id,title,latest_order,category,age_gt,visitor)
+                            VALUES(%s,%s,%s,%s,%s,%s)"""
+                val = (novel_Id, novel_Name, novel_Order, '판타지', 15, novel_Visitor)
                 cursor.execute(sql,val)
                 db.commit()
                 continue
             
             URL_content = "https://page.kakao.com/content/" + str(novel_Id) + "?tab_type=about"
+            driver.implicitly_wait(30)
             driver.get(url=URL_content)
-            WebDriverWait(driver,5).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div.flex.h-full.flex-1 > div.mb-28pxr.ml-4px.flex.w-632pxr.flex-col > div.flex-1.bg-bg-a-20 > div.text-el-60.break-keep.py-20pxr.pt-31pxr.pb-32pxr > span')))
-            
+
+            try:
+                driver.find_element(By.CSS_SELECTOR,'#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div.flex.h-full.flex-1 > div.mb-28pxr.ml-4px.flex.w-632pxr.flex-col > div.flex-1.bg-bg-a-20 > div.text-el-60.break-keep.py-20pxr.pt-31pxr.pb-32pxr > span')
+            except NoSuchElementException :
+                driver.refresh()
+                driver.find_element(By.CSS_SELECTOR,'#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div.flex.h-full.flex-1 > div.mb-28pxr.ml-4px.flex.w-632pxr.flex-col > div.flex-1.bg-bg-a-20 > div.text-el-60.break-keep.py-20pxr.pt-31pxr.pb-32pxr > span')
+
             page_source = driver.page_source
             soup_content = BeautifulSoup(page_source,'html.parser')
 
@@ -142,13 +77,12 @@ try :
                 novel_Keyword = novel_Keyword.get_text()
             else :
                 novel_Keyword = None
-                
-            sql = """INSERT INTO kakaopage_product(id,title,author,category,age_gt,visitor,keyword,content)
-                        VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"""
-            val = (novel_Id, novel_Name, novel_Author, '판타지', age_15gt, novel_Visitor, novel_Keyword, novel_Content)
+
+            sql = """INSERT INTO kakaopage_product(id,title,author,latest_order,category,age_gt,visitor,keyword,content)
+                        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+            val = (novel_Id, novel_Name, novel_Author, novel_Order, '판타지', 0, novel_Visitor, novel_Keyword, novel_Content)
 
             cursor.execute(sql,val)
             db.commit()
 finally :
     db.close()
-print("최종 완료")
