@@ -17,13 +17,13 @@ sep = "@#$"
 if os.path.isfile('./kakaopage_product.txt') :
     f = open('kakaopage_product.txt','r', encoding='utf-8')
     f.readline()
-    last_novel_id = f.readline().strip().split(sep)[1]
+    db_last_novelId = f.readline().strip().split(sep)[1]
     f.close()
 else :
-    last_novel_id = '0'
+    db_last_novelId = '0'
 
 f = open('kakaopage_product.txt','w', encoding='utf-8')
-f.write(last_novel_id + '\n')
+f.write(db_last_novelId + '\n')
 
 # 카카오페이지 판타지 등록순
 URL = "https://page.kakao.com/menu/11/screen/37?subcategory_uid=86&sort_opt=latest"
