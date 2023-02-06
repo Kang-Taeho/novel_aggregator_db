@@ -48,7 +48,7 @@ for page_num in range(1, int(total_novelNum/25) + 2) :
             novel_Id = soup.select_one('#content > div.com_srch > div.bs > ul > li:nth-child({0}) > div > h3 > a'.format(num))['href']
             novel_Id = novel_Id[novel_Id.find('productNo=')+10:]
             novel_IdList.append(int(novel_Id))
-print("novel id 리스트 생성 완료")
+
 #novel 세부 내용 저장
 # DB 저장 정보 : id title author first_ep_date category age_gt likeit keyword content
 db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
