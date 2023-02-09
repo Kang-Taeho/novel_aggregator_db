@@ -6,6 +6,22 @@ from krwordrank.word import summarize_with_keywords
 
 okt = Okt()
 
+# 소설 사이트에서 사용 중인 키워드 집합
+def novel_site_keyword() :
+    keywords_set = set()
+
+    with db.cursor() as cursor :
+        sql = """SELECT keyword
+                FROM kakaopage_product
+                """
+        cursor.execute(sql)
+        db_keywords = cursor.fetchall()
+
+        for keywords in db_keywords :
+            for i in keywords.split('#') :
+                keywords_set.add(i)
+
+# 소설 내용 전처리 함수
 def processing(content, title) :
     pro_content = ''
     sentence_List = [title]
@@ -29,6 +45,8 @@ def processing(content, title) :
         word += '.'
         pro_content += word
     return pro_content
+
+
 
 db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
 try :
