@@ -2,9 +2,9 @@ import pymysql
 import re
 
 from konlpy.tag import Okt
-from krwordrank.word import summarize_with_keywords
 
 okt = Okt()
+stop_List = ['것', '그', '그렇다', '같다', '위', '더', '순', '수']
 
 # 소설 사이트에서 사용 중인 키워드 집합
 def novel_site_keyword() :
@@ -12,60 +12,98 @@ def novel_site_keyword() :
 
     with db.cursor() as cursor :
         sql = """SELECT keyword
-                FROM kakaopage_product
+                FROM novelpia_product
                 """
         cursor.execute(sql)
         db_keywords = cursor.fetchall()
 
         for keywords in db_keywords :
-            for i in keywords.split('#') :
+            if keywords[0] == None : continue
+            for i in keywords[0].split('#') :
                 keywords_set.add(i)
+    print(keywords_set)
 
 # 소설 내용 전처리 함수
 def processing(content, title) :
     pro_content = ''
     sentence_List = [title]
-    sentence_List += filter(lambda a : a, re.split('[\n.]',content))
+    sentence_List += filter(lambda a : a, re.split('[.!?]',content))
 
     for sentence in sentence_List :
+        sentence = sentence.strip()
         sentence = re.sub('\n','',sentence)
-        #sentence = re.sub('([a-zA-Z])','',sentence)
+        # sentence = re.sub('([a-zA-Z])','',sentence)
         sentence = re.sub('[ㄱ-ㅎㅏ-ㅣ]+','',sentence)
-        sentence = re.sub('[-=+,/\?;:!@#$%^&*"\'.`~ㆍ\\|\(\)\[\]\<\>「」『』【】《》]','',sentence)
+        sentence = re.sub('[-=+/\?;:!@#$%^&*"\'.`~ㆍ\\|\(\)\[\]\<\>「」『』【】《》]','',sentence) # ! ? , 빼고 생각
+        
 
         if len(sentence) == 0 : continue
-        sentence = okt.pos(sentence, stem = True)
-        word = []
+        sentence = okt.pos(sentence, stem=True)
 
-        for i in sentence :
-            if i[1] != 'Noun' or len(i[0]) == 1 : continue
-            word.append(i[0])
-        
-        word = ' '.join(word)
-        word += '.'
-        pro_content += word
-    return pro_content
+        for word, tag in sentence :
+            if word in stop_List : continue
 
+            if tag == 'Noun' or tag == 'Alpha' : pro_content += word + " "
+            elif tag == 'Verb' or tag == 'Adjective' : pro_content += word + ". "
 
+    return pro_content.strip()
 
 db = pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='trigger3587!',db='product',charset='utf8')
 try :
     content_List = []
+    pro_content_List = []
+    keyword_List = []
 
     with db.cursor() as cursor :
-        sql = """SELECT title, content 
+        sql = """SELECT title, content, keyword
                 FROM kakaopage_product
-                WHERE keyword LIKE '%#이종족%'
-                """
+                WHERE keyword LIKE '%#{0}%'
+                """.format("삼국지")
         cursor.execute(sql)
         db_novel = cursor.fetchall()
+        print("kakaopage : %s" % len(db_novel))
 
-    for db_infos in db_novel :
-        content = processing(db_infos[1],db_infos[0])
-        content_List.append(content)
+        for db_infos in db_novel :
+            pro_content_List.append(processing(db_infos[1],db_infos[0]))
+            content_List.append(db_infos[0] + ". " + db_infos[1])
+            keyword_List.append(db_infos[2])
+        
+        # sql = """SELECT title, keyword, content
+        #         FROM munpia_product
+        #         WHERE keyword IS NOT NULL
+        #         """
+        # cursor.execute(sql)
+        # db_novel = cursor.fetchall()
+        # print("munpia : %s" % len(db_novel))
 
-    keywords = summarize_with_keywords(content_List, min_count=5, max_length=10, beta=0.85, max_iter=10, verbose=True)
-    print(keywords)
+        # for db_infos in db_novel :
+        #     for keyword in processing(db_infos[1],db_infos[0]) :
+        #         if keyword in pro_content_dict : pro_content_dict[keyword] = pro_content_dict[keyword] + 1
+        #         else :  pro_content_dict[keyword] = 1
+
+        #     content_List.append(db_infos[0] + ". " + db_infos[1])
+        
+        # sql = """SELECT title, content
+        #         FROM novelpia_product
+        #         WHERE keyword LIKE '%{0}%'
+        #         """.format(taeho)
+        # cursor.execute(sql)
+        # db_novel = cursor.fetchall()
+        # print("novelpia : %s" % len(db_novel))
+
+        # for db_infos in db_novel :
+        #     pro_content_List.append(processing(db_infos[1],db_infos[0]))
+        #     content_List.append(db_infos[0] + ". " + db_infos[1])
+
+
+    for num in range(0,len(content_List)) : 
+        print(str(num+1), end=', ')
+        print(content_List[num].replace('\n',' '))
+        print('\n')
+        print(keyword_List[num])
+        print(pro_content_List[num])
+        print('\n')
+        
 
 finally :
     db.close()
