@@ -8,4 +8,4 @@ __pycache__
 .scraping/naver_series/__pycache__
 .scraping/novelpia/__pycache__
 
-.security
+.security/
