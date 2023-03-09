@@ -1,2 +1,11 @@
 .vscode/
 .scraping/kakaopage_pre_latest_novel_id.txt
+
+__pycache__
+.scraping/__pycache__
+.scraping/kakaopage/__pycache__
+.scraping/munpia/__pycache__
+.scraping/naver_series/__pycache__
+.scraping/novelpia/__pycache__
+
+.security
