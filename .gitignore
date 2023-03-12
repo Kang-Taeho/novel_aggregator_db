@@ -1,5 +1,6 @@
 .vscode/
-scraping/kakaopage_pre_latest_novel_id.txt
+scraping/kakaopage/kakaopage_pre_latest_novel_id.txt
+scraping/kakaopage/kakaopage_scrolling.txt
 
 __pycache__
 scraping/__pycache__
@@ -7,7 +8,7 @@ scraping/kakaopage/__pycache__
 scraping/munpia/__pycache__
 scraping/naver_series/__pycache__
 scraping/novelpia/__pycache__
+security/__pycache__
 
-security/
 security/setting.py
 security/test_setting.py
