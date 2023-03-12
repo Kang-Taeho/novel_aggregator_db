@@ -12,12 +12,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
 def scrolling() :
-    scroll_info_list = []
 
     # 최신 스크래핑 소설 정보 찾기
     if os.path.isfile('./kakaopage_pre_latest_novel_id.txt') :
         f = open('kakaopage_pre_latest_novel_id.txt','r', encoding='utf-8')
-        db_last_novelId = int(f.readline())
+        db_last_novelId = int(f.readline().strip())
         f.close()
     else :
         # 가장 오래된 판타지 소설 : 달빛조각사 id(29226849)
@@ -28,7 +27,7 @@ def scrolling() :
 
     options = webdriver.ChromeOptions()
     options.add_experimental_option("excludeSwitches",["enable-logging"])
-    # options.add_argument('--blink-settings=imagesEnabled=false')  15세 뱃지 여부 판단으로 이미지 로드 필요
+    options.add_argument('--blink-settings=imagesEnabled=false')
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
     driver.get(url=URL)
 
@@ -57,18 +56,16 @@ def scrolling() :
     soup = BeautifulSoup(page_source,'html.parser')
 
     novel_infos = soup.select('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr > div > div.flex.grow.flex-col > div.flex.grow.flex-col > div > div.flex.grow.flex-col.py-10pxr.px-15pxr > div > div > div > div')
-
+    f = open('kakaopage_scrolling.txt','w', encoding='utf-8')
     for novel_info in novel_infos :
-        age_15gt =  0
-        for badge in novel_info.select('img',{'class':'alt'}):
-           if badge['alt'] == "15세 뱃지" : age_15gt = 1
-
         novel_Id = novel_info.select_one('a')['href']
         novel_Id = int(novel_Id[novel_Id.rfind('/')+1:])
 
         if novel_Id == db_last_novelId : break
-
-        scroll_info_list.append((novel_Id, 1))
         
+        f.write(str(novel_Id)+"\n")
+    
+    if novel_Id == 29226849 : f.write(str(novel_Id)+"\n")
     driver.close()
-    return scroll_info_list
+    f.close()
+    return
