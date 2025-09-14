@@ -1,0 +1,1 @@
+# 역할: API/Pipeline DTO. 예) NovelIn, NovelOut, EpisodeOut, ScrapeRequest(scope, platform, since).
