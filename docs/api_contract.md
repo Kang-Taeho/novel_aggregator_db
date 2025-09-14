@@ -1,1 +1,0 @@
-OpenAPI 스냅샷과 Postman 컬렉션 매핑.

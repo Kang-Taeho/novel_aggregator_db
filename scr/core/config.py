@@ -1,1 +1,0 @@
-# Pydantic Settings: MySQL DSN, 스케줄 크론, UA, 슬립
