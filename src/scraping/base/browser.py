@@ -1,5 +1,14 @@
-# 역할: Selenium webdriver.Remote 팩토리(Chrome headless “new”), implicit wait 금지, explicit wait 유틸, 프록시/모바일 UA 옵션.
-#
-# 입력: SELENIUM_REMOTE_URL, HEADLESS.
-#
-# 출력: 컨텍스트매니저 with browser() as drv: ...
+from contextlib import contextmanager
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from src.core.config import settings
+
+@contextmanager
+def browser():
+    opts = Options()
+    if settings.HEADLESS: opts.add_argument("--headless=new")
+    opts.add_argument("--no-sandbox"); opts.add_argument("--disable-dev-shm-usage")
+    if settings.USER_AGENT: opts.add_argument(f"--user-agent={settings.USER_AGENT}")
+    drv = webdriver.Remote(command_executor=settings.SELENIUM_REMOTE_URL, options=opts)
+    try: yield drv
+    finally: drv.quit()
