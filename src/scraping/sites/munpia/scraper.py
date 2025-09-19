@@ -3,7 +3,10 @@ from typing import Iterable
 from src.scraping.base.browser import browser
 from src.scraping.base.throttle import throttle
 
-def list_updated(since: datetime | None) -> Iterable[str]:
+def fetch_all_pages_list() -> Iterable[str]:
+    if False: yield ""
+
+def fetch_top500_pages_list() -> Iterable[str]:
     if False: yield ""
     
 def fetch_detail(url: str) -> str:

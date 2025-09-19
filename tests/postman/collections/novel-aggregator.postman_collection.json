@@ -1,0 +1,18 @@
+{
+"info": {"name": "novel-aggregator", "schema": "https://schema.getpostman.com/json/collection/v0.1.0/collection.json"},
+"item": [
+{"name": "Health", "request": {"method": "GET", "url": "{{BASE_URL}}/health"},
+"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": ["pm.test('200', ()=> pm.response.to.have.status(200));"]}}]},
+{"name": "Jobs – daily-500", "request": {"method": "POST", "url": "{{BASE_URL}}/jobs/scrape?mode=daily-500"},
+"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+"pm.test('200', ()=> pm.response.to.have.status(200));",
+"const b = pm.response.json();",
+"pm.expect(['daily-500','full']).to.include(b.mode);"
+]}}]},
+{"name": "Jobs – full", "request": {"method": "POST", "url": "{{BASE_URL}}/jobs/scrape?mode=full"},
+"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+"pm.test('200', ()=> pm.response.to.have.status(200));",
+"pm.expect(pm.response.json()).to.have.property('processed');"
+]}}]}
+]
+}

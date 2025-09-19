@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import text, select
+from sqlalchemy import text, select, func
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from src.data import models
-from datetime import datetime, UTC
 
 
 def get_platform_id(session: Session, slug: str) -> int:
@@ -11,6 +10,7 @@ def get_platform_id(session: Session, slug: str) -> int:
     if pid is None: raise ValueError(f"Unknown platform slug: {slug}")
     return int(pid)
 
+# return : novel table의 insert or update 된 id
 def upsert_canonical_novel(session: Session, data: dict) -> int:
     stmt = mysql_insert(models.Novel).values(
         title=data["title"],
@@ -23,7 +23,7 @@ def upsert_canonical_novel(session: Session, data: dict) -> int:
         age_rating=stmt.inserted.age_rating,
         completion_status=stmt.inserted.completion_status,
         mongo_doc_id=stmt.inserted.mongo_doc_id,
-        update_at = datetime.now(UTC),
+        update_at = func.now(),
     )
     res = session.execute(stmt)
     rid = res.lastrowid
@@ -34,6 +34,7 @@ def upsert_canonical_novel(session: Session, data: dict) -> int:
                 LIMIT 1""")
     return int(session.execute(q, {"t": data["title"], "a": data.get("author_name")}).scalar_one())
 
+# return : novel_source table의 insert 시 id, update 시 0
 def upsert_novel_source(session: Session, novel_id: int, platform_slug: str, data: dict) -> int:
     platform_id = get_platform_id(session, platform_slug)
     stmt = mysql_insert(models.NovelSource).values(

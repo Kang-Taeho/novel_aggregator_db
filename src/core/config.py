@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     CRON_KAKAOPAGE: str = "10 3 * * *"
     CRON_NAVERSERIES: str = "40 3 * * *"
     CRON_MUNPIA: str = "10 4 * * *"
-    REQUEST_MIN_INTERVAL_MS: int = 800
+    REQUEST_MIN_INTERVAL_MS: int = 800 #0.8초
     LOG_LEVEL: str = "INFO"
 
 settings = Settings()
