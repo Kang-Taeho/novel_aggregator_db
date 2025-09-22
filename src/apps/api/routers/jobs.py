@@ -1,7 +1,6 @@
 from __future__ import annotations
 from fastapi import APIRouter
 from pydantic import BaseModel
-from datetime import datetime
 from src.data.database import SessionLocal
 from src.pipeline.orchestrator import (run_initial_full as run_pipeline_initial,
                                        run_daily_top500 as run_pipeline_daily)

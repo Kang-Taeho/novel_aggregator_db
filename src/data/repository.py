@@ -3,7 +3,6 @@ from sqlalchemy import text, select, func
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from src.data import models
 
-
 def get_platform_id(session: Session, slug: str) -> int:
     q = select(models.Platform.id).where(models.Platform.slug == slug)
     pid = session.execute(q).scalar_one_or_none()
@@ -15,6 +14,7 @@ def upsert_canonical_novel(session: Session, data: dict) -> int:
     stmt = mysql_insert(models.Novel).values(
         title=data["title"],
         author_name=data.get("author_name"),
+        genre=data.get("genre"),
         age_rating=data.get("age_rating","ALL"),
         completion_status=data.get("completion_status","unknown"),
         mongo_doc_id=data.get("mongo_doc_id"),
@@ -23,7 +23,7 @@ def upsert_canonical_novel(session: Session, data: dict) -> int:
         age_rating=stmt.inserted.age_rating,
         completion_status=stmt.inserted.completion_status,
         mongo_doc_id=stmt.inserted.mongo_doc_id,
-        update_at = func.now(),
+        updated_at = func.now(),
     )
     res = session.execute(stmt)
     rid = res.lastrowid
@@ -42,12 +42,12 @@ def upsert_novel_source(session: Session, novel_id: int, platform_slug: str, dat
         platform_id=platform_id,
         platform_item_id=data["platform_item_id"],
         episode_count=data.get("episode_count"),
-        last_episode_date=data.get("last_episode_date"),
+        first_episode_date=data.get("first_episode_date"),
         view_count=data.get("view_count"),
     )
     stmt = stmt.on_duplicate_key_update(
         episode_count=stmt.inserted.episode_count,
-        last_episode_date=stmt.inserted.last_episode_date,
+        first_episode_date=stmt.inserted.first_episode_date,
         view_count=stmt.inserted.view_count,
     )
     res = session.execute(stmt)

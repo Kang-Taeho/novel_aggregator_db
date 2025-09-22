@@ -10,7 +10,7 @@ SAMPLE_DETAIL_URL = [
 ]
 
 def fetch_all_pages_list() -> Iterable[str]:
-    if False: yield ""
+    if True: yield ""
 
 def fetch_top500_pages_list() -> Iterable[str]:
     if False: yield ""

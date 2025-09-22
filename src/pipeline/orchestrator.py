@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from importlib import import_module
 import logging
 from time import perf_counter
-from src.pipeline.normalize import map_age, map_status
+from src.pipeline.normalize import map_age, map_status, map_view
 from src.data.mongo import upsert_meta
 from src.data.repository import upsert_canonical_novel, upsert_novel_source
 
@@ -30,25 +30,27 @@ def _run(session: Session, platform: str, list_fn_name: str, commit_every: int =
 
             age = map_age(data.get("age_rating"))
             status = map_status(data.get("completion_status"))
+            view_count = map_view(data.get("view_count"))
+            episode_count = map_view(data.get("episode_count"))
             mongo_id = upsert_meta(
-                title=data.get("title", ""),
+                title=data.get("title"),
                 author_name=data.get("author_name"),
                 description=data.get("description"),
                 keywords=data.get("keywords") or [],
-                mongo_doc_id=data.get("mongo_doc_id"),
             )
             novel_id = upsert_canonical_novel(session, {
-                "title": data.get("title", ""),
+                "title": data.get("title"),
                 "author_name": data.get("author_name"),
+                "genre": data.get("genre"),
                 "age_rating": age,
                 "completion_status": status,
                 "mongo_doc_id": mongo_id,
             })
             upsert_novel_source(session, novel_id, platform, {
                 "platform_item_id": data.get("platform_item_id", ""),
-                "episode_count": data.get("episode_count"),
-                "last_episode_date": data.get("last_episode_date"),
-                "view_count": data.get("view_count"),
+                "episode_count": episode_count,
+                "first_episode_date": data.get("first_episode_date"),
+                "view_count": view_count,
             })
 
             if (index % commit_every) == 0:
