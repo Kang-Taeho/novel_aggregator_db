@@ -1,7 +1,7 @@
-from datetime import datetime
 from typing import Iterable
 from src.scraping.base.browser import browser
 from src.scraping.base.throttle import throttle
+import requests
 
 def fetch_all_pages_list() -> Iterable[str]:
     if False: yield ""
@@ -10,6 +10,8 @@ def fetch_top500_pages_list() -> Iterable[str]:
     if False: yield ""
     
 def fetch_detail(url: str) -> str:
-    with throttle(), browser() as drv:
-        drv.get(url)
-        return drv.page_source
+    headers = {
+        "User-Agent": "Mozilla/5.0 ... Chrome/114 Safari/537.36",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    }
+    return requests.get(url, headers=headers).text
