@@ -1,51 +1,52 @@
 from bs4 import BeautifulSoup
-from datetime import datetime
-from selenium import webdriver
+import json
 
 # parsing 목록
-# title, author_name, platform_item_id, episode_count, first_episode_date, view_count
-# description, keywords
+# title, author_name, platform_item_id, genre
+# description, view_count, first_episode_date
 # age_rating, completion_status
+# 비효율 가능: episode_count
+# 비효율 불가: keywords
+
+def _text(m):
+    if m: return m.get("content")
+    else : return None
 
 def parse_detail(html: str) -> dict:
-    data = dict()
-
-    driver = webdriver.Chrome()
-    driver.get(html)
-    html1 = driver.page_source
     #overview page
-    soup = BeautifulSoup(html1, "lxml")
+    soup = BeautifulSoup(html, "lxml")
+    data = dict()
+    script = soup.find("script", id="__NEXT_DATA__")
+    if script and script.string:
+        try:
+            nxt = json.loads(script.string)
+            props = nxt.get("props", {}).get("pageProps", {}).get("initialProps", {})
+            meta = props.get("metaInfo", {})
+            dq = props.get("dehydratedState", {}).get("queries", []) or []
+            content = {}
+            if dq and isinstance(dq[0], dict):
+                content = (dq[0].get("state", {})
+                           .get("data", {})
+                           .get("contentHomeOverview", {})
+                           .get("content", {})) or {}
 
-    box = soup.select_one('div[data-t-obj*="정보"]')
-    data["platform_item_id"] = html.split("/")[-1]
-    data["title"] = box.select_one("span.font-large3-bold").get_text(strip=True)
-    data["author_name"] = box.select_one("span.font-small2").get_text(strip=True)
-    data["genre"] = box.select('div.flex.h-16pxr.items-center')[0].get_text(strip=True).replace("웹소설","")
-    data["completion_status"] = box.select_one('div.mt-6pxr.flex.items-center').get_text(strip=True)
-    data["view_count"] = box.select('div.flex.items-center')[2].get_text(strip=True)
+            data["platform_item_id"] = content.get("seriesId") or props.get("seriesId")
+            data["title"] = content.get("title") or meta.get("title")
+            data["author_name"] = content.get("authors") or meta.get("author")
+            data["description"] = content.get("description") or meta.get("description")
+            data["genre"] = content.get("subcategory")
+            data["age_rating"] = content.get("ageGrade")
+            data["first_episode_date"] =  content.get("startSaleDt")
+            data["completion_status"] = content.get("onIssue")
+            data["view_count"] = content.get("serviceProperty").get("viewCount")
+            data["episode_count"] = (soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr '
+                                                     '> div.flex.h-full.flex-1.flex-col > div '
+                                                     '> div.flex.flex-col.overflow-hidden.mb-28pxr.ml-4px.w-632pxr.rounded-12pxr '
+                                                     '> div.flex-1.flex.flex-col > div.rounded-b-12pxr.bg-bg-a-20 '
+                                                     '> div.flex.h-44pxr.w-full.flex-row.items-center.justify-between.bg-bg-a-20.px-18pxr '
+                                                     '> div.flex.h-full.flex-1.items-center.space-x-8pxr > span')
+                                     .get_text(strip=True).replace("전체 ", ""))
+        except (KeyError, ValueError, TypeError) :
+            pass
 
-    box = soup.select_one('div[data-t-obj*="회차목록"]').select_one('div[data-t-obj*="eventMeta"]')
-    data["first_episode_date"] = datetime.strptime(box.select_one("div.line-clamp-1 span").get_text(strip=True), "%y.%m.%d").date()
-
-    data["episode_count"] = (soup.select_one('#__next > div > div.flex.w-full.grow.flex-col.px-122pxr '
-                                             '> div.flex.h-full.flex-1.flex-col > div '
-                                             '> div.flex.flex-col.overflow-hidden.mb-28pxr.ml-4px.w-632pxr.rounded-12pxr '
-                                             '> div.flex-1.flex.flex-col > div.rounded-b-12pxr.bg-bg-a-20 '
-                                             '> div.flex.h-44pxr.w-full.flex-row.items-center.justify-between.bg-bg-a-20.px-18pxr '
-                                             '> div.flex.h-full.flex-1.items-center.space-x-8pxr > span')
-                             .get_text(strip=True).replace("전체 ",""))
-
-    #about page
-    driver.get(html+"?tab_type=about")
-    html2 = driver.page_source
-    soup = BeautifulSoup(html2, "lxml")
-    data["description"] = soup.select_one('div[data-t-obj*="더보기"]').get_text(strip=True)
-    keywords = [
-        el.get_text(strip=True)
-        for el in soup.select('div[data-t-obj*="테마키워드"]')
-        if el
-    ]
-    data["keywords"] = ",".join(keywords) if keywords else None
-    data["age_rating"] = soup.select('span.text-el-70')[-2].get_text(strip=True)
-    driver.close()
     return data

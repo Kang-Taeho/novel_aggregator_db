@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from importlib import import_module
 import logging
 from time import perf_counter
-from src.pipeline.normalize import map_age, map_status, map_view
+from src.pipeline.normalize import map_age, map_status, map_num
 from src.data.mongo import upsert_meta
 from src.data.repository import upsert_canonical_novel, upsert_novel_source
 
@@ -30,8 +30,8 @@ def _run(session: Session, platform: str, list_fn_name: str, commit_every: int =
 
             age = map_age(data.get("age_rating"))
             status = map_status(data.get("completion_status"))
-            view_count = map_view(data.get("view_count"))
-            episode_count = map_view(data.get("episode_count"))
+            view_count = map_num(data.get("view_count"))
+            episode_count = map_num(data.get("episode_count"))
             mongo_id = upsert_meta(
                 title=data.get("title"),
                 author_name=data.get("author_name"),
@@ -88,5 +88,5 @@ def _run(session: Session, platform: str, list_fn_name: str, commit_every: int =
 def run_initial_full(session: Session, platform: str) -> dict:
     return _run(session, platform, "fetch_all_pages_list")
 
-def run_daily_top500(session: Session, platform: str) -> dict:
+def run_daily_platform(session: Session, platform: str) -> dict:
     return _run(session, platform, "fetch_top500_pages_list")

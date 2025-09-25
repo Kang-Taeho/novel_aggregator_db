@@ -4,7 +4,7 @@ from datetime import datetime
 import pytz
 from src.core.config import settings
 from src.data.database import SessionLocal
-from src.pipeline.orchestrator import run_daily_top500 as run_pipeline_daily
+from src.pipeline.orchestrator import run_daily_platform as run_pipeline_daily
 
 tz = pytz.timezone(settings.TZ)
 def job(platform: str):
