@@ -1,9 +1,8 @@
-from src.scraping.sites.munpia.parser import parse_detail
-from scraping.sites.munpia.scraper import fetch_detail
+from src.scraping.sites.kakaopage.parser import parse_detail
+from scraping.sites.kakaopage.scraper import fetch_detail
 
 SAMPLE_DETAIL_URL = [
-    fetch_detail("https://novel.munpia.com/453239"), #연재
-    fetch_detail("https://novel.munpia.com/467924"), #완결
+    fetch_detail("https://page.kakao.com/content/58474045"),
 ]
 
 def test_parse_detail():
