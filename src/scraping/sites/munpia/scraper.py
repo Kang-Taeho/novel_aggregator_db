@@ -1,6 +1,4 @@
 from typing import Iterable
-from src.scraping.base.browser import browser
-from src.scraping.base.throttle import throttle
 import requests
 
 def fetch_all_pages_list() -> Iterable[str]:

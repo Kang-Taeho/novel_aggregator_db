@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from bs4 import BeautifulSoup
 
 
@@ -33,6 +33,8 @@ def parse_detail(html: str) -> Dict[str, Any]:
         "view_count": None,
         "first_episode_date": None,
         "completion_status": None,
+        # "keywords": None,
+        # "episode_count": None,
     }
 
     script = soup.find("script", id="__NEXT_DATA__")

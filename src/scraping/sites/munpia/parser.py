@@ -1,16 +1,22 @@
+from __future__ import annotations
 from bs4 import BeautifulSoup
+from typing import Dict, Any
 import re
 
 
 def parse_detail(html: str) -> dict:
-    """문피아 소설 상세 페이지에서 메타데이터를 파싱합니다."""
+    """
+    문피아 소설 상세 페이지에서 메타데이터를 파싱합니다.
+    - age_rating은 파싱 불가능
+    """
 
     soup = BeautifulSoup(html, "lxml")
-    data = {
+    data: Dict[str, Any] = {
         "title": None,
         "author_name": None,
         "platform_item_id": None,
         "genre": None,
+        # "age_rating": None,
         "description": None,
         "view_count": None,
         "first_episode_date": None,

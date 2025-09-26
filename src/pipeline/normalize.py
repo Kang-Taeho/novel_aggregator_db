@@ -9,7 +9,7 @@ def map_age(age_raw: str | None) -> str:
     a = age_raw.strip().upper()
     if "12" in a or "Twelve" in a : return "12"
     elif "15" in a or "Fifteen" in a : return "15"
-    elif "19" in a or "Nineteen" in a: return "19"
+    elif "19" in a or "Nineteen" in a or "청소년" in a : return "19"
     else : return "ALL"
 
 def map_status(raw: str | None) -> str:
