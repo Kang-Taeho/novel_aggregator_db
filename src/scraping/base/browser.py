@@ -21,7 +21,7 @@ def browser():
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-extensions")
     opts.add_argument("--disable-notifications")
-    opts.add_argument("--disable-background-networking")
+    # opts.add_argument("--disable-background-networking")
     opts.add_argument("--disable-sync")
     opts.add_argument("--disable-translate")
     opts.add_argument("--no-first-run")

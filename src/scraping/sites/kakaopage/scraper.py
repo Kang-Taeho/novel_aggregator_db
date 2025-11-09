@@ -1,40 +1,24 @@
 from __future__ import annotations
 from typing import Set
-from selenium.common.exceptions import WebDriverException
 import logging, time, re, random
 from src.scraping.base.browser import browser
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 log = logging.getLogger(__name__)
-
-# ====== JS 한방 추출기 ======
-EXTRACT_IDS_JS = r"""
-(() => {
-  const found = new Set();
-
-  // 1) href="/content/<num>"
-  for (const a of document.querySelectorAll('a[href]')) {
-    const href = a.getAttribute('href') || a.href || '';
-    const m = href && href.match(/\/content\/(\d+)/);
-    if (m) found.add(m[1]);
-  }
-  return Array.from(found);
-})();
-"""
-
 RE_CONTENT_ID = re.compile(r"/content/(\d+)")
-RE_CONTENT_ID_HTML = re.compile(r"/content/(\d+)")
-
 GENRE_URLS = [
     "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=86",   # 판타지
     "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=120",  # 현판
     "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=89",   # 로맨스
     "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=117",  # 로판
     "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=87",   # 무협
-    "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=125",  # 드라마
 ]
 
-def _scroll_to_bottom(drv, min_jiggle_prob: float = 0.15, stable_ticks_needed: int = 2,
-                      pause_sec: float = 1.2, max_seconds: int = 120) -> None:
+def _scroll_to_bottom(drv, min_jiggle_prob: float = 0.15, stable_ticks_needed: int = 5,
+                      pause_sec: float = 1.2, max_seconds: int = 1800) -> None:
     """
     무한스크롤 페이지를 끝까지 로드:
     - 높이(scrollHeight)가 연속 stable_ticks_needed번 변하지 않으면 종료
@@ -68,6 +52,7 @@ def _scroll_to_bottom(drv, min_jiggle_prob: float = 0.15, stable_ticks_needed: i
             last_h = h
 
         if stable >= stable_ticks_needed:
+            log.warning("scroll_to_bottom: %.1fs", time.time() - t0)
             break
 
         if time.time() - t0 > max_seconds:
@@ -86,14 +71,17 @@ def fetch_all_pages_set() -> Set[str]:
             time.sleep(1.5)  # 초기 자바스크립트 부트 시간
 
             _scroll_to_bottom(drv)
+            WebDriverWait(drv, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "a.cursor-pointer[href^='/content/']")
+                )
+            )
 
-            # JS 한방 추출
-            try:
-                ids: Set[str] = drv.execute_script(EXTRACT_IDS_JS) or []
-                log.info("Extracted %d ids from %s", len(ids), url)
-                found_all_ids.update(ids)
-            except WebDriverException as e:
-                log.exception("JS extract failed on %s: %s", url, e)
+            html = drv.page_source
+            ids = set(RE_CONTENT_ID.findall(html))
+            log.info("Extracted %d ids from %s", len(ids), url)
+            found_all_ids.update(ids)
+
     return found_all_ids
 
 def fetch_detail(product_no: str) -> str:

@@ -88,5 +88,6 @@ def _run(session: Session, platform: str, list_fn_name: str, commit_every: int =
 def run_initial_full(session: Session, platform: str) -> dict:
     return _run(session, platform, "fetch_all_pages_list")
 
-def run_daily_platform(session: Session, platform: str) -> dict:
-    return _run(session, platform, "fetch_top500_pages_list")
+# 하루마다 스케쥴 기능 보류
+# def run_daily_platform(session: Session, platform: str) -> dict:
+#     return _run(session, platform, "fetch_top500_pages_list")
