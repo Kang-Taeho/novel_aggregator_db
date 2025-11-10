@@ -9,15 +9,17 @@ log = logging.getLogger(__name__)
 
 _PER_PAGE = 25  # 한 페이지당 25개로 고정
 _MAX_WORKERS = 32 # 멀티스레드 테스트 후 결정
-BASE_URL = "https://series.naver.com/novel/categoryProductList.series"
+GENRE_BASE = "https://series.naver.com/novel/categoryProductList.series"
+GENRE_CODES = ["201","207","202","208","206","203","205"]
+            #로맨스    로판  판타지 현판  무협  미스테리    라이트노벨
 RE_PRODUCT_HREF = re.compile(r"productNo=(\d+)")
 
-def _total_pages_25() -> int:
+def _total_pages(c) -> int:
     params = {
         "categoryTypeCode": "series",
         "page": "1",
     }
-    html = http_get(BASE_URL, params)
+    html = http_get(_build_url(c,0), params)
     if not html:
         return 1
     soup = BeautifulSoup(html, "lxml")
@@ -29,13 +31,13 @@ def _total_pages_25() -> int:
 
     return max(1, math.ceil(total_cnt / _PER_PAGE))
 
-def _build_url(page: int) -> str:
-    # 원본 쿼리: categoryTypeCode=series&page=1
+def _build_url(c: str, page: int) -> str:
     qs = {
-        "categoryTypeCode": "series",
-        "page": str(page),
+        "categoryTypeCode": "genre",
+        "genreCode": c,
+        "page": str(page)
     }
-    return f"{BASE_URL}?{urlencode(qs)}"
+    return f"{GENRE_BASE}?{urlencode(qs)}"
 
 def _parse_product_ids_bs4(html: str) -> Set[str]:
     """
@@ -68,8 +70,8 @@ def _parse_product_ids_bs4(html: str) -> Set[str]:
 # =========================
 # 페이지 단위 수집
 # =========================
-def _fetch_page_ids(page: int) -> Set[str]:
-    url = _build_url(page)
+def _fetch_page_ids(c,page: int) -> Set[str]:
+    url = _build_url(c,page)
     html = http_get(url)
     if not html:
         log.warning("failed to fetch page=%s", page)
@@ -79,17 +81,19 @@ def _fetch_page_ids(page: int) -> Set[str]:
 
 def fetch_all_pages_set() -> Set[str]:
     found_all_ids: Set[str] = set()
-    end_page = _total_pages_25()
 
-    with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
-        futs = {ex.submit(_fetch_page_ids, p): p for p in range(1, end_page + 1)}
-        for fut in as_completed(futs):
-            p = futs[fut]
-            try:
-                ids = fut.result()
-                found_all_ids.update(ids)
-            except Exception as e:
-                log.warning("page %s failed: %s", p, e)
+    for c in GENRE_CODES :
+        end_page = _total_pages(c)
+        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
+            futs = {ex.submit(_fetch_page_ids,c, p): p for p in range(1, end_page + 1)}
+            for fut in as_completed(futs):
+                p = futs[fut]
+                try:
+                    ids = fut.result()
+                    found_all_ids.update(ids)
+                except Exception as e:
+                    log.warning("page %s failed: %s", p, e)
+        log.info("Extracted %d ids from GENRE_CODE(%s)", len(found_all_ids), c)
     return found_all_ids
 
 

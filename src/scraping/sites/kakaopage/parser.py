@@ -22,7 +22,6 @@ def parse_detail(html: str) -> Dict[str, Any]:
     - episode_count는 본문 DOM 의존도가 높아 기본 None 으로 둠 (필요 시 별도 API/리스트 페이지 파싱 권장)
     - keywords는 별도의 페이지이므로 시간이 너무 걸려 생략
     """
-    soup = BeautifulSoup(html, "lxml")
     data: Dict[str, Any] = {
         "title": None,
         "author_name": None,
@@ -36,7 +35,10 @@ def parse_detail(html: str) -> Dict[str, Any]:
         # "keywords": None,
         # "episode_count": None,
     }
+    # 19세 이상 로그인 시 정보열람 가능
+    if "서비스 이용을 위해 연령 확인이 필요 합니다" in html : return data
 
+    soup = BeautifulSoup(html, "lxml")
     script = soup.find("script", id="__NEXT_DATA__")
     if not (script and script.string):
         return data

@@ -12,8 +12,6 @@ def parse_detail(html: str) -> Dict[str, Any]:
     - keywords은 파싱 불가능
     - first_episode_date는 본문 DOM 의존도가 높아 기본 None 으로 둠 (필요 시 별도 API/리스트 페이지 파싱 권장)
     """
-    
-    soup = BeautifulSoup(html, "lxml")
     data: Dict[str, Any] = {
         "title": None,
         "author_name": None,
@@ -27,7 +25,10 @@ def parse_detail(html: str) -> Dict[str, Any]:
         # "keywords": None,
         "episode_count": None,
     }
+    # 19세 이상 로그인 시 정보열람 가능
+    if "19세 미만의 청소년이 이용할 수 없습니다" in html : return data
 
+    soup = BeautifulSoup(html, "lxml")
     # 작품 ID
     link = soup.find("link", rel="canonical")
     if link and link.get("href"):

@@ -12,7 +12,7 @@ class ScrapeBody(BaseModel):
 @router.post("/scrape")
 def scrape(body: ScrapeBody):
     with SessionLocal() as session:
-        res = run_pipeline(session, platform=body.platform)
+        res = run_pipeline(platform=body.platform)
         return {"status": "ok", "result": res}
 # res  = {
 #         "platform": platform,
