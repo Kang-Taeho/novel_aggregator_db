@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-from bson import ObjectId
 from src.core.config import settings
 
 def get_client():

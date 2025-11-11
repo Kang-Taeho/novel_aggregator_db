@@ -1,5 +1,5 @@
-from src.scraping.sites.naverseries.parser import parse_detail
-from src.scraping.sites.naverseries.scraper import fetch_detail
+from src.scraping.sites.NS.parser import parse_detail
+from src.scraping.sites.NS.scraper import fetch_detail
 
 SAMPLE_DETAIL_URL = [
     fetch_detail("https://series.naver.com/novel/detail.series?productNo=12450709"),

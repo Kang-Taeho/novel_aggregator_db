@@ -1,5 +1,4 @@
 from __future__ import annotations
-from sqlalchemy.orm import Session
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from importlib import import_module
 import logging
@@ -14,7 +13,7 @@ log = logging.getLogger(__name__)
 
 def _db_process(
     p_no: str,
-    platform: str,
+    p_slug: str,
     scraper,
     parser) -> dict:
     """
@@ -61,7 +60,7 @@ def _db_process(
             "completion_status": status,
             "mongo_doc_id": mongo_id,
         })
-        upsert_novel_source(session, novel_id, platform, {
+        upsert_novel_source(session, novel_id, p_slug, {
             "platform_item_id": data.get("platform_item_id") or p_no,
             "episode_count": episode_count,
             "first_episode_date": data.get("first_episode_date"),
@@ -78,7 +77,7 @@ def _db_process(
 
     except Exception as e:
         session.rollback()
-        log.exception("[%s] FAIL p_no=%s", platform, p_no)
+        log.exception("[%s] FAIL p_no=%s", p_slug, p_no)
         return {
             "p_no": p_no,
             "ok": False,
@@ -88,7 +87,7 @@ def _db_process(
         session.close()
 
 def _run(
-        platform: str,
+        p_slug: str,
         sc_fn_name: str,
         max_workers: int = 16) -> dict:
     """
@@ -96,23 +95,24 @@ def _run(
     - scraper.fetch_all_pages_set() (또는 다른 sc_fn) 으로 ID 리스트 수집
     - ThreadPoolExecutor로 각 ID를 병렬 처리
     """
-    scraper = import_module(f"src.scraping.sites.{platform}.scraper")
-    parser = import_module(f"src.scraping.sites.{platform}.parser")
+    scraper = import_module(f"src.scraping.sites.{p_slug}.scraper")
+    parser = import_module(f"src.scraping.sites.{p_slug}.parser")
     sc_fn = getattr(scraper, sc_fn_name)
 
     all_ids = sc_fn()
     process_total = len(all_ids)
 
-    process_ok = process_failed = 0
+    process_ok = 0
+    process_failed = 0
     skipped = 0
     errors = []
     t_start = perf_counter()
 
-    log.info("[%s] starting MT run: total=%d, workers=%d", platform, process_total, max_workers)
+    log.info("[%s] starting MT run: total=%d, workers=%d", p_slug, process_total, max_workers)
 
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         futs = {
-            ex.submit(_db_process, p_no, platform, scraper, parser): p_no
+            ex.submit(_db_process, p_no, p_slug, scraper, parser): p_no
             for p_no in all_ids
         }
         # log 정보 코드 (기능과 무관)
@@ -123,8 +123,8 @@ def _run(
             except Exception as e:
                 process_failed += 1
                 if len(errors) < 10:
-                    errors.append({"url": f"{platform}{p_no}", "error": str(e)})
-                log.exception("[%s] worker crashed p_no=%s", platform, p_no)
+                    errors.append({"url": f"{p_slug}/{p_no}", "error": str(e)})
+                log.exception("[%s] worker crashed p_no=%s", p_slug, p_no)
                 continue
 
             if result.get("skipped"):
@@ -133,27 +133,27 @@ def _run(
 
             if result.get("ok"):
                 process_ok += 1
-                log.info("[%s] OK p_no=%s fetch=%dms parse=%dms",platform,p_no,
+                log.info("[%s] OK p_no=%s fetch=%dms parse=%dms",p_slug,p_no,
                     result.get("fetch_ms", -1),
                     result.get("parse_ms", -1),
                 )
             else:
                 process_failed += 1
                 if len(errors) < 10:
-                    errors.append({"url": f"{platform}{p_no}", "error": result.get("error", "")})
+                    errors.append({"url": f"{p_slug}/{p_no}", "error": result.get("error", "")})
                 log.warning(
-                    "[%s] FAIL p_no=%s error=%s",platform,p_no,
+                    "[%s] FAIL p_no=%s error=%s",p_slug,p_no,
                     result.get("error", ""),
                 )
 
     duration_ms = int((perf_counter() - t_start) * 1000)
     log.info(
         "[%s] MT done: total=%d ok=%d failed=%d skipped=%d duration=%dms",
-        platform, process_total, process_ok, process_failed, skipped, duration_ms
+        p_slug, process_total, process_ok, process_failed, skipped, duration_ms
     )
 
     return {
-        "platform": platform,
+        "platform_slug": p_slug,
         "sc_fn": sc_fn_name,
         "total": process_total,
         "success": process_ok,
@@ -163,9 +163,5 @@ def _run(
         "duration_ms": duration_ms,
     }
 
-def run_initial_full(platform: str, max_workers: int = 16) -> dict:
-    return _run( platform, "fetch_all_pages_set",max_workers)
-
-# 하루마다 스케쥴 기능 보류
-# def run_daily_platform(platform: str, max_workers: int = 16) -> dict:
-#     return _run(session, platform, "fetch_top500_pages_list")
+def run_initial_full(platform_slug: str, max_workers: int = 16) -> dict:
+    return _run( platform_slug, "fetch_all_pages_set",max_workers)

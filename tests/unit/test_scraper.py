@@ -1,4 +1,4 @@
-from src.scraping.sites.naverseries import scraper
+from src.scraping.sites.NS import scraper
 
 def test_fetch_all_pages_set_aggregates_all_ids(monkeypatch):
     # 1) _total_pages: 각 장르 URL 당 3페이지라고 가정

@@ -7,12 +7,12 @@ from src.pipeline.orchestrator import run_initial_full as run_pipeline
 router = APIRouter()
 
 class ScrapeBody(BaseModel):
-    platform: str
+    platform_slug : str
 
 @router.post("/scrape")
 def scrape(body: ScrapeBody):
     with SessionLocal() as session:
-        res = run_pipeline(platform=body.platform)
+        res = run_pipeline(platform_slug=body.platform_slug)
         return {"status": "ok", "result": res}
 # res  = {
 #         "platform": platform,

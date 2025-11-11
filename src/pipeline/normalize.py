@@ -36,7 +36,7 @@ def map_date(s: str) -> Optional[date]:
     """'25.08.13' or '2025.08.13' -> date"""
     if not s: return None
     for fmt in ("%y.%m.%d", "%Y.%m.%d", "%y-%m-%d", "%Y-%m-%d",
-                "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", #kakaopage
+                "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", #KP
                 "%Y.%m.%d %H:%M", #munpia
                 ):
         try:

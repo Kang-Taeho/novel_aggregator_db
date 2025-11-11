@@ -1,5 +1,5 @@
 import pytest
-from src.scraping.sites.naverseries import scraper
+from src.scraping.sites.NS import scraper
 
 @pytest.mark.naver_live
 def test_fetch_all_pages_set_live_smoke(monkeypatch):

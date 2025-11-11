@@ -1,7 +1,7 @@
 # tests/selenium/test_KP_scraper.py
 import re
 import pytest
-from src.scraping.sites.kakaopage import scraper
+from src.scraping.sites.KP import scraper
 
 @pytest.mark.kp_slow
 def test_fetch_all_pages_set_live_minimal():
