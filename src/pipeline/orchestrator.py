@@ -89,7 +89,7 @@ def _db_process(
 def _run(
         p_slug: str,
         sc_fn_name: str,
-        max_workers: int = 16) -> dict:
+        max_workers) -> dict:
     """
     멀티쓰레드 버전:
     - scraper.fetch_all_pages_set() (또는 다른 sc_fn) 으로 ID 리스트 수집
@@ -163,5 +163,5 @@ def _run(
         "duration_ms": duration_ms,
     }
 
-def run_initial_full(platform_slug: str, max_workers: int = 16) -> dict:
+def run_initial_full(platform_slug: str, max_workers: int) -> dict:
     return _run( platform_slug, "fetch_all_pages_set",max_workers)

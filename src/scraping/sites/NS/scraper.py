@@ -15,11 +15,7 @@ GENRE_CODES = ["201","207","202","208","206","203","205"]
 RE_PRODUCT_HREF = re.compile(r"productNo=(\d+)")
 
 def _total_pages(c) -> int:
-    params = {
-        "categoryTypeCode": "series",
-        "page": "1",
-    }
-    html = http_get(_build_url(c,0), params)
+    html = http_get(_build_url(c,0))
     if not html:
         return 1
     soup = BeautifulSoup(html, "lxml")

@@ -53,8 +53,6 @@ def _get_session(
 
 def http_get(
     url: str,
-    params: Optional[Dict[str, Any]] = None,
-    *,
     session: Optional[requests.Session] = None,
     timeout=(5, 15),                 # (connect, read)
     allow_redirects: bool = True,
@@ -67,12 +65,11 @@ def http_get(
     try:
         r = sess.get(
             url,
-            params=params,
             timeout=timeout,
             allow_redirects=allow_redirects,
         )
     except requests.RequestException as e:
-        log.warning("GET %s params=%s exception: %s", url, params, e)
+        log.warning("GET %s exception: %s", url, e)
         return None
 
     if r.status_code in (401, 403, 418, 451):
