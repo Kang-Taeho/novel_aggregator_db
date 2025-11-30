@@ -23,7 +23,7 @@
               "raw": "{}"
             },
             "url": {
-              "raw": "{{base_url}}/jobs/scrape?platform_slug=KP&max_workers=12",
+              "raw": "{{base_url}}/jobs/scrape?platform_slug=KP&max_workers=8",
               "host": [
                 "{{base_url}}"
               ],
@@ -40,7 +40,7 @@
                 },
                 {
                   "key": "max_workers",
-                  "value": "12",
+                  "value": "8",
                   "description": "ThreadPoolExecutor max_workers",
                   "disabled": false
                 }

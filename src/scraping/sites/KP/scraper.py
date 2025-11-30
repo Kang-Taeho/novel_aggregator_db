@@ -2,10 +2,11 @@ from __future__ import annotations
 from typing import Set
 import logging, time, re, random
 from src.scraping.base.browser import browser
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
 
 log = logging.getLogger(__name__)
 RE_CONTENT_ID = re.compile(r"/content/(\d+)")
@@ -17,8 +18,12 @@ GENRE_URLS = [
     "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=87",   # 무협
 ]
 
-def _scroll_to_bottom(drv, min_jiggle_prob: float = 0.15, stable_ticks_needed: int = 5,
-                      pause_sec: float = 1.2, max_seconds: int = 1800) -> None:
+def _scroll_to_bottom(
+        drv,
+        min_jiggle_prob: float = 0.15,
+        stable_ticks_needed: int = 3,
+        pause_sec: float = 1.2,
+        max_seconds: int = 3600) -> None:
     """
     무한스크롤 페이지를 끝까지 로드:
     - 높이(scrollHeight)가 연속 stable_ticks_needed번 변하지 않으면 종료
@@ -28,19 +33,28 @@ def _scroll_to_bottom(drv, min_jiggle_prob: float = 0.15, stable_ticks_needed: i
     t0 = time.time()
     last_h = 0
     stable = 0
+    body = drv.find_element("tag name", "body")
 
     while True:
-        # 맨 아래로
-        drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        # 하이브리드 스크롤
+        if time.time() - t0 < 1200 :
+            drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        else :
+            for i in range(3) :
+                try:
+                    body.send_keys(Keys.PAGE_DOWN)
+                except StaleElementReferenceException:
+                    body = drv.find_element("tag name", "body")
+                    body.send_keys(Keys.PAGE_DOWN)
         time.sleep(pause_sec)
 
         # 필요 시 살짝 흔들기(가상화/관찰자 깨우기)
-        if random.random() < min_jiggle_prob:
+        if stable >= 2 and random.random() < min_jiggle_prob:
             try:
                 drv.execute_script("window.scrollBy(0, -400);")
-                time.sleep(0.2)
+                time.sleep(0.1)
                 drv.execute_script("window.scrollBy(0, 400);")
-                time.sleep(0.2)
+                time.sleep(0.1)
             except WebDriverException:
                 pass
 
@@ -70,12 +84,12 @@ def fetch_all_pages_set() -> Set[str]:
             drv.get(url)
             time.sleep(1.5)  # 초기 자바스크립트 부트 시간
 
-            _scroll_to_bottom(drv)
             WebDriverWait(drv, 15).until(
                 EC.presence_of_element_located(
                     (By.CSS_SELECTOR, "a.cursor-pointer[href^='/content/']")
                 )
             )
+            _scroll_to_bottom(drv)
 
             html = drv.page_source
             ids = set(RE_CONTENT_ID.findall(html))

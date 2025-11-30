@@ -22,7 +22,7 @@ class ScrapeJobResponse(BaseModel):
 @router.post("/scrape", response_model=ScrapeJobResponse)
 def scrape_job(
     platform_slug: str = Query(..., description="플랫폼 코드, 예: KP, NS"),
-    max_workers: int = Query(12, ge=1, le=64),
+    max_workers: int = Query(8, ge=1, le=64),
 ):
     result = run_pipeline(platform_slug=platform_slug, max_workers=max_workers)
     return result
