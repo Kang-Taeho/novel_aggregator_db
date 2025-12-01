@@ -10,8 +10,6 @@ def test_fetch_all_pages_set_live_smoke(monkeypatch):
     """
     # 장르 하나만
     monkeypatch.setattr(scraper, "GENRE_CODES", scraper.GENRE_CODES[6:7])
-    # 페이지도 2페이지만 보게
-    monkeypatch.setattr(scraper, "_total_pages", lambda url: 10)
     ids = scraper.fetch_all_pages_set()
 
     # 최소 몇 개 이상 나오는지만 느슨하게 체크

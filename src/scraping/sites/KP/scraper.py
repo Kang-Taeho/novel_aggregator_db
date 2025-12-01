@@ -20,10 +20,10 @@ GENRE_URLS = [
 
 def _scroll_to_bottom(
         drv,
-        min_jiggle_prob: float = 0.15,
-        stable_ticks_needed: int = 3,
-        pause_sec: float = 1.2,
-        max_seconds: int = 3600) -> None:
+        min_jiggle_prob: float = 0.07,
+        stable_ticks_needed: int = 2,
+        pause_sec: float = 0.3,
+        max_seconds: int = 7200) -> None:
     """
     무한스크롤 페이지를 끝까지 로드:
     - 높이(scrollHeight)가 연속 stable_ticks_needed번 변하지 않으면 종료
@@ -31,25 +31,19 @@ def _scroll_to_bottom(
     - 최대 수행시간 안전장치 포함
     """
     t0 = time.time()
+    ten_min = 600
     last_h = 0
     stable = 0
-    body = drv.find_element("tag name", "body")
 
     while True:
-        # 하이브리드 스크롤
-        if time.time() - t0 < 1200 :
-            drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        else :
-            for i in range(3) :
-                try:
-                    body.send_keys(Keys.PAGE_DOWN)
-                except StaleElementReferenceException:
-                    body = drv.find_element("tag name", "body")
-                    body.send_keys(Keys.PAGE_DOWN)
+        drv.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+        if time.time() - t0 > ten_min:
+            pause_sec += 0.05
+            ten_min += 600
         time.sleep(pause_sec)
 
         # 필요 시 살짝 흔들기(가상화/관찰자 깨우기)
-        if stable >= 2 and random.random() < min_jiggle_prob:
+        if stable >= 1 and random.random() < min_jiggle_prob:
             try:
                 drv.execute_script("window.scrollBy(0, -400);")
                 time.sleep(0.1)
@@ -75,15 +69,13 @@ def _scroll_to_bottom(
 
 def fetch_all_pages_set() -> Set[str]:
     """
-    1) 각 URL 로드 → 2) 끝까지 스크롤 → 3) JS로 series id 한 방에 추출 → 4) 전부 합집합 반환
+    1) 각 URL 로드 → 2) 끝까지 스크롤 → 3) series id 한 방에 추출 → 4) 전부 합집합 반환
     """
     found_all_ids: Set[str] = set()
-    with browser() as drv:
-        for url in GENRE_URLS:
-            log.info("Loading: %s", url)
+    for url in GENRE_URLS:
+        log.info("Loading: %s", url)
+        with browser() as drv:
             drv.get(url)
-            time.sleep(1.5)  # 초기 자바스크립트 부트 시간
-
             WebDriverWait(drv, 15).until(
                 EC.presence_of_element_located(
                     (By.CSS_SELECTOR, "a.cursor-pointer[href^='/content/']")

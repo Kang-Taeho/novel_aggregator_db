@@ -163,5 +163,5 @@ def _run(
         "duration_ms": duration_ms,
     }
 
-def run_initial_full(platform_slug: str, max_workers: int) -> dict:
+def run_initial_full(platform_slug: str, max_workers: int = 8) -> dict:
     return _run( platform_slug, "fetch_all_pages_set",max_workers)

@@ -14,6 +14,14 @@ GENRE_CODES = ["201","207","202","208","206","203","205"]
             #로맨스    로판  판타지 현판  무협  미스테리    라이트노벨
 RE_PRODUCT_HREF = re.compile(r"productNo=(\d+)")
 
+def _build_url(c: str, page: int) -> str:
+    qs = {
+        "categoryTypeCode": "genre",
+        "genreCode": c,
+        "page": str(page)
+    }
+    return f"{GENRE_BASE}?{urlencode(qs)}"
+
 def _total_pages(c) -> int:
     html = http_get(_build_url(c,0))
     if not html:
@@ -26,14 +34,6 @@ def _total_pages(c) -> int:
     total_cnt = int("".join(ch for ch in txt if ch.isdigit() or ch == ",").replace(",", "") or 0)
 
     return max(1, math.ceil(total_cnt / _PER_PAGE))
-
-def _build_url(c: str, page: int) -> str:
-    qs = {
-        "categoryTypeCode": "genre",
-        "genreCode": c,
-        "page": str(page)
-    }
-    return f"{GENRE_BASE}?{urlencode(qs)}"
 
 def _parse_product_ids_bs4(html: str) -> Set[str]:
     """
@@ -80,6 +80,7 @@ def fetch_all_pages_set() -> Set[str]:
 
     for c in GENRE_CODES :
         end_page = _total_pages(c)
+        log.info("Loading: genre_code(%s)", c)
         with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
             futs = {ex.submit(_fetch_page_ids,c, p): p for p in range(1, end_page + 1)}
             for fut in as_completed(futs):

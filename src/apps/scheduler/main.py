@@ -3,15 +3,13 @@ from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime
 import pytz
 from src.core.config import settings
-from src.data.database import SessionLocal
-from src.pipeline.orchestrator import run_daily_platform as run_pipeline_daily
+from src.pipeline.orchestrator import run_initial_full as run_pipeline_daily
 
 tz = pytz.timezone(settings.TZ)
-def job(platform: str):
+def job(platform_slug: str):
     def _inner():
-        print(f"[{datetime.now(tz).isoformat()}] job: {platform}")
-        with SessionLocal() as s:
-            run_pipeline_daily(s, platform=platform)
+        print(f"[{datetime.now(tz).isoformat()}] job: {platform_slug}")
+        run_pipeline_daily(platform_slug=platform_slug)
     return _inner
 
 def main():
