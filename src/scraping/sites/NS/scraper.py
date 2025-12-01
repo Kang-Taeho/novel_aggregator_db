@@ -23,7 +23,7 @@ def _build_url(c: str, page: int) -> str:
     return f"{GENRE_BASE}?{urlencode(qs)}"
 
 def _total_pages(c) -> int:
-    html = http_get(_build_url(c,0))
+    html = http_get(_build_url(c,1))
     if not html:
         return 1
     soup = BeautifulSoup(html, "lxml")
