@@ -48,3 +48,17 @@ CREATE TABLE IF NOT EXISTS novel_sources (
   CONSTRAINT fk_ns_platform FOREIGN KEY (platform_id) REFERENCES platforms(id)
     ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS job_runs (
+  id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+  job_key         VARCHAR(120) NOT NULL,
+  platform        VARCHAR(8)   NOT NULL,
+  mode            VARCHAR(32)  NOT NULL,
+  scheduled_at    DATETIME NULL,
+  started_at      DATETIME NULL,
+  finished_at     DATETIME NULL,
+  status          ENUM('RUNNING','SUCCEEDED','FAILED','SKIPPED') NOT NULL,
+  metrics_json    JSON NULL,
+  error_sample_json JSON NULL,
+  KEY ix_job_runs_platform_started (platform, started_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

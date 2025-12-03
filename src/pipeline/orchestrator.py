@@ -4,13 +4,29 @@ from importlib import import_module
 import logging
 from time import perf_counter
 
+from requests.exceptions import RequestException
+from sqlalchemy.exc import OperationalError, InterfaceError
+from pymongo.errors import AutoReconnect, ServerSelectionTimeoutError, NetworkTimeout
+
+from src.core.retry import retry
 from src.pipeline.normalize import map_age, map_status, map_num
 from src.data.database import SessionLocal
 from src.data.mongo import upsert_meta
 from src.data.repository import upsert_canonical_novel, upsert_novel_source
 
 log = logging.getLogger(__name__)
+RETRY_EXCEPTIONS = (
+    RequestException,
+    OperationalError,
+    InterfaceError,
+    AutoReconnect,
+    ServerSelectionTimeoutError,
+    NetworkTimeout,)
 
+@retry(
+    exceptions=RETRY_EXCEPTIONS,
+    tries=3, base=1.0, cap=8.0, jitter=0.3,
+)
 def _db_process(
     p_no: str,
     p_slug: str,
@@ -89,7 +105,7 @@ def _db_process(
 def _run(
         p_slug: str,
         sc_fn_name: str,
-        max_workers) -> dict:
+        max_workers : int) -> dict:
     """
     멀티쓰레드 버전:
     - scraper.fetch_all_pages_set() (또는 다른 sc_fn) 으로 ID 리스트 수집

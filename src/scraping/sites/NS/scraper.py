@@ -7,8 +7,8 @@ from src.scraping.base.net import http_get
 
 log = logging.getLogger(__name__)
 
-_PER_PAGE = 25  # 한 페이지당 25개로 고정
-_MAX_WORKERS = 32 # 멀티스레드 테스트 후 결정
+_PER_PAGE = 25  # 한 페이지당 25개
+_MAX_WORKERS = 8 # 테스트 결과로 조정
 GENRE_BASE = "https://series.naver.com/novel/categoryProductList.series"
 GENRE_CODES = ["201","207","202","208","206","203","205"]
             #로맨스    로판  판타지 현판  무협  미스테리    라이트노벨
