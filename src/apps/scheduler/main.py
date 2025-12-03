@@ -1,23 +1,65 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
+from __future__ import annotations
+import logging
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime
-import pytz
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.executors.pool import ThreadPoolExecutor
+from pytz import timezone
+
 from src.core.config import settings
-from src.pipeline.orchestrator import run_initial_full as run_pipeline
+from src.apps.scheduler.jobs import do_initial
 
-tz = pytz.timezone(settings.TZ)
-def job(platform_slug: str):
-    def _inner():
-        print(f"[{datetime.now(tz).isoformat()}] job: {platform_slug}")
-        run_pipeline(platform_slug=platform_slug)
-    return _inner
+log = logging.getLogger(__name__)
+_scheduler: BackgroundScheduler | None = None
 
-def main():
-    sched = BlockingScheduler(timezone=tz)
-    for slug, cron in [("KP", settings.CRON_KAKAOPAGE), ("NS", settings.CRON_NAVERSERIES), ("MP", settings.CRON_MUNPIA)]:
-        sched.add_job(job(slug), CronTrigger.from_crontab(cron, timezone=tz), id=slug)
-    print("Scheduler started. Ctrl+C to stop.")
-    try: sched.start()
-    except (KeyboardInterrupt, SystemExit): print("Scheduler stopped.")
+def _register_jobs(sched: BackgroundScheduler):
+    tz = timezone(settings.SCHED_TZ or "Asia/Seoul")
+    max_workers = int(settings.SCHED_MAX_WORKERS or 8)
 
-if __name__ == "__main__": main()
+    test_iv = int(settings.SCHED_TEST_INTERVAL_DAY or 0)
+
+    for slug, cron in [("KP", settings.CRON_KAKAOPAGE), ("NS", settings.CRON_NAVERSERIES)]:
+        if test_iv > 0:
+            trig = IntervalTrigger(days=test_iv, timezone=tz)
+            jname = f"initial_full-{slug}-interval"
+        else:
+            trig = CronTrigger.from_crontab(cron, timezone=tz)
+            jname = f"initial_full-{slug}"
+
+        sched.add_job(
+            func=do_initial,
+            trigger=trig,
+            id=jname,
+            name=jname,
+            kwargs={"platform_slug": slug, "max_workers": max_workers},
+            replace_existing=True,
+            max_instances=1,        # 같은 잡 동시 실행 방지(프로세스 내부)
+        )
+        log.info("Scheduled %s", jname)
+
+def start_scheduler() -> BackgroundScheduler | None:
+    global _scheduler
+    if _scheduler:
+        return _scheduler
+
+    executors = {
+        'default': ThreadPoolExecutor(max_workers=1),  # 동시에 1개만 실행
+    }
+    sched = BackgroundScheduler(executors=executors,timezone=settings.TZ)
+    _register_jobs(sched)
+    try:
+        sched.start()
+        log.info("Scheduler started.")
+    except (KeyboardInterrupt, SystemExit):
+        log.info("Scheduler stopped.")
+    _scheduler = sched
+    return sched
+
+def shutdown_scheduler():
+    global _scheduler
+    if _scheduler:
+        try:
+            _scheduler.shutdown(wait=False)
+            log.info("Scheduler stopped.")
+        finally:
+            _scheduler = None

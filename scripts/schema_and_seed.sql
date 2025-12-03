@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS job_runs (
   job_key         VARCHAR(120) NOT NULL,
   platform        VARCHAR(8)   NOT NULL,
   mode            VARCHAR(32)  NOT NULL,
-  scheduled_at    DATETIME NULL,
   started_at      DATETIME NULL,
   finished_at     DATETIME NULL,
   status          ENUM('RUNNING','SUCCEEDED','FAILED','SKIPPED') NOT NULL,

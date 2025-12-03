@@ -47,10 +47,9 @@ class NovelSource(Base):
 class JobRun(Base):
     __tablename__ = "job_runs"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    job_key: Mapped[str] = mapped_column(String(120), nullable=False)            # UNIQUE
+    job_key: Mapped[str] = mapped_column(String(120), nullable=False)
     platform: Mapped[str] = mapped_column(String(8), nullable=False)
     mode: Mapped[str] = mapped_column(String(32), nullable=False)
-    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     started_at:   Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at:  Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[str] = mapped_column(Enum('RUNNING','SUCCEEDED','FAILED','SKIPPED'), nullable=False)

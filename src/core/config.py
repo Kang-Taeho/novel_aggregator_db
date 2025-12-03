@@ -16,9 +16,11 @@ class Settings(BaseSettings):
     R_USER_AGENT : str | None = None
 
     TZ: str = "Asia/Seoul"
-    CRON_KAKAOPAGE: str = "10 3 * * *"
-    CRON_NAVERSERIES: str = "40 3 * * *"
-    CRON_MUNPIA: str = "10 4 * * *"
+    SCHED_MAX_WORKERS = "8"
+    SCHED_TEST_INTERVAL_DAY = "1"
+
+    CRON_KAKAOPAGE: str = "0 1 1 * *"
+    CRON_NAVERSERIES: str = "0 0 1 * *"
     REQUEST_MIN_INTERVAL_MS: int = 800 #0.8초
     LOG_LEVEL: str = "INFO"
 
