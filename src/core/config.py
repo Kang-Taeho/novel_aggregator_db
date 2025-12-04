@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     R_USER_AGENT : str | None = None
 
     TZ: str = "Asia/Seoul"
-    SCHED_MAX_WORKERS = "8"
-    SCHED_TEST_INTERVAL_DAY = "1"
+    SCHED_MAX_WORKERS : str = "8"
+    SCHED_TEST_INTERVAL_DAY : str = "1" #테스트 목적  (실전 0 , 테스트 >0 )
 
     CRON_KAKAOPAGE: str = "0 1 1 * *"
     CRON_NAVERSERIES: str = "0 0 1 * *"

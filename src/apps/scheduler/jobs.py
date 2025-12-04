@@ -34,7 +34,7 @@ def do_initial(platform_slug: str, max_workers: int) -> None:
             "skipped": result.get("skipped", 0),
             "duration_ms": result.get("duration_ms", 0),
         }
-        jr["status"] = "SUCCESSED"
+        jr["status"] = "SUCCEEDED"
         jr["finished_at"] = datetime.now(ZoneInfo(settings.TZ))
 
     except Exception:
