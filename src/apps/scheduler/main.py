@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 _scheduler: BackgroundScheduler | None = None
 
 def _register_jobs(sched: BackgroundScheduler):
-    tz = timezone(settings.SCHED_TZ or "Asia/Seoul")
+    tz = timezone(settings.TZ or "Asia/Seoul")
     max_workers = int(settings.SCHED_MAX_WORKERS or 8)
 
     test_iv = int(settings.SCHED_TEST_INTERVAL_DAY or 0)
@@ -34,6 +34,8 @@ def _register_jobs(sched: BackgroundScheduler):
             kwargs={"platform_slug": slug, "max_workers": max_workers},
             replace_existing=True,
             max_instances=1,        # 같은 잡 동시 실행 방지(프로세스 내부)
+            misfire_grace_time=3600,  # ← 지연 시 1시간 안엔 수행
+            coalesce=True  # ← 밀린 실행 병합
         )
         log.info("Scheduled %s", jname)
 
