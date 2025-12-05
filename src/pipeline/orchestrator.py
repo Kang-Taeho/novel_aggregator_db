@@ -10,6 +10,7 @@ from pymongo.errors import AutoReconnect, ServerSelectionTimeoutError, NetworkTi
 
 from src.core.retry import retry
 from src.pipeline.normalize import map_age, map_status, map_num
+from src.pipeline.schemas import NovelParsed
 from src.data.database import SessionLocal
 from src.data.mongo import upsert_meta
 from src.data.repository import upsert_canonical_novel, upsert_novel_source
@@ -48,8 +49,12 @@ def _db_process(
         t_fetch = perf_counter()
         data = parser.parse_detail(html)
         t_parse = perf_counter()
+        del html
 
-        if not data.get("platform_item_id"):
+        try :
+            obj = NovelParsed(**data)
+        except Exception as e:
+            log.exception("parse_validation_skip platform_slug : %s, p_no : %s",p_slug,p_no)
             return {
                 "p_no": p_no,
                 "skipped": True,
@@ -57,29 +62,29 @@ def _db_process(
                 "parse_ms": int((t_parse - t_fetch) * 1000),
             }
 
-        age = map_age(data.get("age_rating"))
-        status = map_status(data.get("completion_status"))
-        view_count = map_num(data.get("view_count"))
-        episode_count = map_num(data.get("episode_count"))
+        age = map_age(obj.age_rating)
+        status = map_status(obj.completion_status)
+        view_count = map_num(obj.view_count)
+        episode_count = map_num(obj.episode_count)
 
         mongo_id = upsert_meta(
-            title=data.get("title"),
-            author_name=data.get("author_name"),
-            description=data.get("description"),
-            keywords=data.get("keywords") or [],
+            title=obj.title,
+            author_name=obj.author_name,
+            description=obj.description,
+            keywords=obj.keywords,
         )
         novel_id = upsert_canonical_novel(session, {
-            "title": data.get("title"),
-            "author_name": data.get("author_name"),
-            "genre": data.get("genre"),
+            "title": obj.title,
+            "author_name": obj.author_name,
+            "genre": obj.genre,
             "age_rating": age,
             "completion_status": status,
             "mongo_doc_id": mongo_id,
         })
         upsert_novel_source(session, novel_id, p_slug, {
-            "platform_item_id": data.get("platform_item_id") or p_no,
+            "platform_item_id": obj.platform_item_id,
             "episode_count": episode_count,
-            "first_episode_date": data.get("first_episode_date"),
+            "first_episode_date": obj.first_episode_date,
             "view_count": view_count,
         })
         session.commit()
