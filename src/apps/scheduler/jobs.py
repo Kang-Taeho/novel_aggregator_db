@@ -13,7 +13,7 @@ def _today_key(job_type: str, platform_slug: str) -> str:
     d = datetime.now(kst).strftime("%Y%m%d-%H%M%S")
     return  f"{job_type}:{platform_slug}:{d}"
 
-def do_initial(platform_slug: str, max_workers: int) -> None:
+def do_initial(platform_slug: str, max_workers: int) -> dict:
     session = SessionLocal()
     job_key = _today_key("initial_full", platform_slug)
     jr = {
@@ -57,3 +57,4 @@ def do_initial(platform_slug: str, max_workers: int) -> None:
         session.rollback()
     finally:
         session.close()
+        return jr

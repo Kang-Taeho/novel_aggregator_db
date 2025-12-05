@@ -1,0 +1,4 @@
+[
+  { "title": "샘플1", "author_name": "작가1", "age_rating": "ALL", "completion_status": "unknown", "episode_count_min": 1, "view_count_min": 0 },
+  { "title": "샘플2", "author_name": "작가2", "age_rating": "15",  "completion_status": "completed", "episode_count_min": 1, "view_count_min": 0 }
+]

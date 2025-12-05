@@ -16,11 +16,11 @@ def _register_jobs(sched: BackgroundScheduler):
     tz = timezone(settings.TZ or "Asia/Seoul")
     max_workers = int(settings.SCHED_MAX_WORKERS or 8)
 
-    test_iv = int(settings.SCHED_TEST_INTERVAL_DAY or 0)
+    test_iv = int(settings.SCHED_TEST_INTERVAL_HOUR or 0)
 
     for slug, cron in [("KP", settings.CRON_KAKAOPAGE), ("NS", settings.CRON_NAVERSERIES)]:
         if test_iv > 0:
-            trig = IntervalTrigger(days=test_iv, timezone=tz)
+            trig = IntervalTrigger(hours=test_iv, timezone=tz)
             jname = f"initial_full-{slug}-interval"
         else:
             trig = CronTrigger.from_crontab(cron, timezone=tz)
