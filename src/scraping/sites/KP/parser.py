@@ -32,8 +32,8 @@ def parse_detail(html: str) -> Dict[str, Any]:
         "view_count": None,
         "first_episode_date": None,
         "completion_status": None,
-        # "keywords": None,
-        # "episode_count": None,
+        "keywords": None,       # 불가
+        "episode_count": None,  # 불가
     }
     # 19세 이상 로그인 시 정보열람 가능
     if "서비스 이용을 위해 연령 확인이 필요 합니다" in html : return data
@@ -56,7 +56,7 @@ def parse_detail(html: str) -> Dict[str, Any]:
             ) or {}
 
         # 기본 메타
-        data["platform_item_id"] = content.get("seriesId") or props.get("seriesId")
+        data["platform_item_id"] = str(content.get("seriesId") or props.get("seriesId")) #숫자로 나옴
         data["title"] = content.get("title") or meta.get("ogTitle") or meta.get("title")
         data["author_name"] = content.get("authors") or meta.get("author")
         data["description"] = content.get("description") or meta.get("description")
@@ -73,9 +73,7 @@ def parse_detail(html: str) -> Dict[str, Any]:
 
         # 조회수
         svc = content.get("serviceProperty") or {}
-        vc = svc.get("viewCount")
-        if isinstance(vc, (int, float)):
-            data["view_count"] = int(vc)
+        data["view_count"] = svc.get("viewCount")
 
     except Exception:
         # 구조 변화/키 누락 시 조용히 폴백 (상위에서 재시도/로그)

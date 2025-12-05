@@ -20,9 +20,9 @@ def parse_detail(html: str) -> Dict[str, Any]:
         "age_rating": None,
         "description": None,
         "view_count": None,
-        # "first_episode_date": None,
+        "first_episode_date": None, # 불가
         "completion_status": None,
-        # "keywords": None,
+        "keywords": None,           # 불가
         "episode_count": None,
     }
     # 19세 이상 로그인 시 정보열람 가능

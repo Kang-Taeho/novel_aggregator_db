@@ -9,7 +9,7 @@ from sqlalchemy.exc import OperationalError, InterfaceError
 from pymongo.errors import AutoReconnect, ServerSelectionTimeoutError, NetworkTimeout
 
 from src.core.retry import retry
-from src.pipeline.normalize import map_age, map_status, map_num
+from src.pipeline.normalize import map_age, map_status, map_num, map_date
 from src.pipeline.schemas import NovelParsed
 from src.data.database import SessionLocal
 from src.data.mongo import upsert_meta
@@ -52,20 +52,20 @@ def _db_process(
         del html
 
         try :
+            data['age_rating'] = map_age(data['age_rating'])
+            data['completion_status'] = map_status(data['completion_status'])
+            data['view_count'] = map_num(data['view_count'])
+            data['episode_count'] = map_num(data['episode_count'])
+            data['first_episode_date'] = map_date(data['first_episode_date'])
+
             obj = NovelParsed(**data)
-        except Exception as e:
-            log.exception("parse_validation_skip platform_slug : %s, p_no : %s",p_slug,p_no)
+        except Exception as e: # 예) 19세 이상 소설데이터는 검색 불가
             return {
                 "p_no": p_no,
                 "skipped": True,
                 "fetch_ms": int((t_fetch - t0) * 1000),
                 "parse_ms": int((t_parse - t_fetch) * 1000),
             }
-
-        age = map_age(obj.age_rating)
-        status = map_status(obj.completion_status)
-        view_count = map_num(obj.view_count)
-        episode_count = map_num(obj.episode_count)
 
         mongo_id = upsert_meta(
             title=obj.title,
@@ -77,15 +77,15 @@ def _db_process(
             "title": obj.title,
             "author_name": obj.author_name,
             "genre": obj.genre,
-            "age_rating": age,
-            "completion_status": status,
+            "age_rating": obj.age_rating,
+            "completion_status": obj.completion_status,
             "mongo_doc_id": mongo_id,
         })
         upsert_novel_source(session, novel_id, p_slug, {
             "platform_item_id": obj.platform_item_id,
-            "episode_count": episode_count,
+            "episode_count": obj.episode_count,
             "first_episode_date": obj.first_episode_date,
-            "view_count": view_count,
+            "view_count": obj.view_count,
         })
         session.commit()
         return {
