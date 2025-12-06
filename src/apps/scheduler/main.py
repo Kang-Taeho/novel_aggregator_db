@@ -16,12 +16,19 @@ def _register_jobs(sched: BackgroundScheduler):
     tz = timezone(settings.TZ or "Asia/Seoul")
     max_workers = int(settings.SCHED_MAX_WORKERS or 8)
 
-    test_iv = int(settings.SCHED_TEST_INTERVAL_HOUR or 0)
+    test_iv = (int(settings.SCHED_TEST_INTERVAL_HOURS) or
+               int(settings.SCHED_TEST_INTERVAL_SECONDS) or 0)
 
     for slug, cron in [("KP", settings.CRON_KAKAOPAGE), ("NS", settings.CRON_NAVERSERIES)]:
+        #테스트
         if test_iv > 0:
-            trig = IntervalTrigger(hours=test_iv, timezone=tz)
-            jname = f"initial_full-{slug}-interval"
+            if int(settings.SCHED_TEST_INTERVAL_SECONDS) > 0 :
+                trig = IntervalTrigger(seconds=test_iv, timezone=tz)
+                jname = f"initial_full-{slug}-interval_seconds"
+            else :
+                trig = IntervalTrigger(hours=test_iv, timezone=tz)
+                jname = f"initial_full-{slug}-interval_hours"
+        #실제 운영환경
         else:
             trig = CronTrigger.from_crontab(cron, timezone=tz)
             jname = f"initial_full-{slug}"
@@ -49,11 +56,7 @@ def start_scheduler() -> BackgroundScheduler | None:
     }
     sched = BackgroundScheduler(executors=executors,timezone=settings.TZ)
     _register_jobs(sched)
-    try:
-        sched.start()
-        log.info("Scheduler started.")
-    except (KeyboardInterrupt, SystemExit):
-        log.info("Scheduler stopped.")
+    sched.start()
     _scheduler = sched
     return sched
 
@@ -62,6 +65,5 @@ def shutdown_scheduler():
     if _scheduler:
         try:
             _scheduler.shutdown(wait=False)
-            log.info("Scheduler stopped.")
         finally:
             _scheduler = None

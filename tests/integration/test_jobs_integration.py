@@ -1,10 +1,13 @@
 # tests/integration/test_jobs_integration.py
 from sqlalchemy import text
+from src.core import config
 from src.apps.scheduler.jobs import do_initial
 from src.data.database import SessionLocal
 
 def test_do_daily_success(monkeypatch):
-    monkeypatch.setenv("SCHED_TZ","Asia/Seoul")
+    monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_HOURS", "0")
+    monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_SECONDS", "2")
+
     def fake_run_initial_full(platform_slug,max_workers):
         return {"platform_slug":platform_slug,"total":5,"success":5,"failed":0,"skipped":0,"duration_ms":111,"errors_sample":[]}
     monkeypatch.setattr("src.apps.scheduler.jobs.run_pipeline", fake_run_initial_full)

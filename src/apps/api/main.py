@@ -12,6 +12,6 @@ async def lifespan(app: FastAPI):
     finally:
         shutdown_scheduler()
 
-app = FastAPI(title="Novel Aggregator API", version="0.1.0", lifespan="lifespan")
+app = FastAPI(title="Novel Aggregator API", version="0.1.0", lifespan=lifespan)
 app.include_router(health.router)
 app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
