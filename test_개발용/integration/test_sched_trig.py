@@ -25,6 +25,6 @@ def test_scheduler_triggers(monkeypatch):
     # orchestrator 함수 대체
     monkeypatch.setattr("src.apps.scheduler.jobs.run_pipeline", lambda **k: fake_run(**k))
     # 직접 호출
-    jr = do_initial(platform_slug="KP", max_workers=2)
+    jr = do_initial(platform_slug="KP", max_workers=2, test_bool=True)
     assert jr is not None
     assert jr["status"] == "SUCCEEDED"

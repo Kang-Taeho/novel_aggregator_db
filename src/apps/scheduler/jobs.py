@@ -13,9 +13,11 @@ def _today_key(job_type: str, platform_slug: str) -> str:
     d = datetime.now(kst).strftime("%Y%m%d-%H%M%S")
     return  f"{job_type}:{platform_slug}:{d}"
 
-def do_initial(platform_slug: str, max_workers: int) -> dict:
+def do_initial(platform_slug: str, max_workers: int, test_bool:bool=False) -> dict:
     session = SessionLocal()
-    job_key = _today_key("initial_full", platform_slug)
+    if test_bool: job_key = _today_key("test_initial_full", platform_slug)
+    else : job_key = _today_key("initial_full", platform_slug)
+
     jr = {
         "job_key" : job_key,
         "platform" : platform_slug,

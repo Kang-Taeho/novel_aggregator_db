@@ -14,9 +14,9 @@ def map_age(age_raw: str | None) -> str:
 def map_status(raw: str | None) -> str:
     if not raw: return "unknown"
     r = raw.strip().lower()
-    if "연재" in r or "ing" in r : return "ongoing"
-    elif "완결" in r or "pause" in r: return "completed"
-    elif "휴재" in r or "end" in r: return "hiatus"
+    if "연재" in r or "ing" in r or "ongoing" in r : return "ongoing"
+    elif "완결" in r or "pause" in r or "completed" in r : return "completed"
+    elif "휴재" in r or "end" in r or "hiatus" in r : return "hiatus"
     else : return "unknown"
 
 def map_num(s: str | int) -> int:

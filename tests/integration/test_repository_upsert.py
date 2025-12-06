@@ -1,10 +1,10 @@
 # tests/integration/test_repository_upsert.py
-from sqlalchemy.orm import Session
 from src.data.database import SessionLocal
 from src.data.repository import upsert_canonical_novel, upsert_novel_source
+from sqlalchemy import text
 
 def test_upsert_uniqueness():
-    s: Session = SessionLocal()
+    s = SessionLocal()
     try:
         nid = upsert_canonical_novel(s, {
             "title": "중복 테스트",
@@ -26,11 +26,11 @@ def test_upsert_uniqueness():
         })
         s.commit()
 
-        assert nid == nid2, "동일 title/author는 같은 canonical novel 이어야 함"
+        assert nid == nid2
 
         nid3 = upsert_novel_source(s, nid, "KP", {
             "platform_item_id": "123",
-            "episode_count": 1,
+            "episode_count": 123,
             "first_episode_date": None,
             "view_count": 0,
         })
@@ -39,12 +39,16 @@ def test_upsert_uniqueness():
         # 같은 platform/platform_item_id로 업데이트 시도
         nid4 = upsert_novel_source(s, nid, "KP", {
             "platform_item_id": "123",
-            "episode_count": 2,
+            "episode_count": 123,
             "first_episode_date": None,
             "view_count": 10,
         })
         s.commit()
 
-        assert nid3 == nid4, "동일 title/author는 같은 canonical novel 이어야 함"
+        assert nid3 == nid4
+        # 테스트 기록 지우기
+        s.execute(text("DELETE FROM novel_sources WHERE platform_item_id=123 AND episode_count=123"))
+        s.execute(text("DELETE FROM novels WHERE title='중복 테스트' AND author_name='홍길동'"))
+        s.commit()
     finally:
         s.close()

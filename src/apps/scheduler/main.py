@@ -28,17 +28,19 @@ def _register_jobs(sched: BackgroundScheduler):
             else :
                 trig = IntervalTrigger(hours=test_iv, timezone=tz)
                 jname = f"initial_full-{slug}-interval_hours"
+            test_bool = True
         #실제 운영환경
         else:
             trig = CronTrigger.from_crontab(cron, timezone=tz)
             jname = f"initial_full-{slug}"
+            test_bool = False
 
         sched.add_job(
             func=do_initial,
             trigger=trig,
             id=jname,
             name=jname,
-            kwargs={"platform_slug": slug, "max_workers": max_workers},
+            kwargs={"platform_slug": slug, "max_workers": max_workers, "test_bool":test_bool},
             replace_existing=True,
             max_instances=1,        # 같은 잡 동시 실행 방지(프로세스 내부)
             misfire_grace_time=3600,  # ← 지연 시 1시간 안엔 수행
