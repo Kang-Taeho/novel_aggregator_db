@@ -1,4 +1,4 @@
-# test_임시/selenium/test_KP_scraper.py
+# test_개발용/selenium/test_KP_scraper.py
 import re
 import pytest
 from src.scraping.sites.KP import scraper

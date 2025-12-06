@@ -1,0 +1,175 @@
+{
+  "info": {
+    "name": "novel-aggregator",
+    "schema": "https://schema.getpostman.com/json/collection/v0.1.0/collection.json",
+    "_exporter_id": "novel-aggregator-local"
+  },
+  "item": [
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "POST /jobs/scrape (KP, full)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs/scrape?platform_slug=KP&max_workers=8",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "jobs",
+                "scrape"
+              ],
+              "query": [
+                {
+                  "key": "platform_slug",
+                  "value": "KP",
+                  "description": "플랫폼 코드 (예: KP=카카오페이지)",
+                  "disabled": false
+                },
+                {
+                  "key": "max_workers",
+                  "value": "8",
+                  "description": "ThreadPoolExecutor max_workers",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "카카오페이지(KP) 전체 초기 스크래핑 잡 실행 (run_initial_full(platform_slug='KP'))."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"basic fields exist\", function () {",
+                  "  pm.expect(json).to.have.property(\"platform_slug\");",
+                  "  pm.expect(json).to.have.property(\"sc_fn\");",
+                  "  pm.expect(json).to.have.property(\"total\");",
+                  "  pm.expect(json).to.have.property(\"success\");",
+                  "  pm.expect(json).to.have.property(\"failed\");",
+                  "  pm.expect(json).to.have.property(\"skipped\");",
+                  "  pm.expect(json).to.have.property(\"duration_ms\");",
+                  "  pm.expect(json).to.have.property(\"errors_sample\");",
+                  "});",
+                  "",
+                  "pm.test(\"platform_slug matches KP\", function () {",
+                  "  pm.expect(json.platform_slug).to.eql(\"KP\");",
+                  "});",
+                  "",
+                  "pm.test(\"errors_sample is array\", function () {",
+                  "  pm.expect(Array.isArray(json.errors_sample)).to.be.true;",
+                  "});",
+                  "console.log(\"response body:\", pm.response.text());\n"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /jobs/scrape (NS, full)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs/scrape?platform_slug=NS&max_workers=12",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "jobs",
+                "scrape"
+              ],
+              "query": [
+                {
+                  "key": "platform_slug",
+                  "value": "NS",
+                  "description": "플랫폼 코드 (예: NS=네이버 시리즈)",
+                  "disabled": false
+                },
+                {
+                  "key": "max_workers",
+                  "value": "12",
+                  "description": "ThreadPoolExecutor max_workers",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "네이버 시리즈(NS) 전체 초기 스크래핑 잡 실행 (run_initial_full(platform_slug='NS'))."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"basic fields exist\", function () {",
+                  "  pm.expect(json).to.have.property(\"platform_slug\");",
+                  "  pm.expect(json).to.have.property(\"sc_fn\");",
+                  "  pm.expect(json).to.have.property(\"total\");",
+                  "  pm.expect(json).to.have.property(\"success\");",
+                  "  pm.expect(json).to.have.property(\"failed\");",
+                  "  pm.expect(json).to.have.property(\"skipped\");",
+                  "  pm.expect(json).to.have.property(\"duration_ms\");",
+                  "  pm.expect(json).to.have.property(\"errors_sample\");",
+                  "});",
+                  "",
+                  "pm.test(\"platform_slug matches NS\", function () {",
+                  "  pm.expect(json.platform_slug).to.eql(\"NS\");",
+                  "});",
+                  "",
+                  "pm.test(\"errors_sample is array\", function () {",
+                  "  pm.expect(Array.isArray(json.errors_sample)).to.be.true;",
+                  "});",
+                  "console.log(\"response body:\", pm.response.text());\n"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}

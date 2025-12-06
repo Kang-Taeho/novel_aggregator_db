@@ -78,7 +78,8 @@
                   "",
                   "pm.test(\"errors_sample is array\", function () {",
                   "  pm.expect(Array.isArray(json.errors_sample)).to.be.true;",
-                  "});"
+                  "});",
+                  "console.log(\"response body:\", pm.response.text());\n"
                 ]
               }
             }
@@ -154,7 +155,8 @@
                   "",
                   "pm.test(\"errors_sample is array\", function () {",
                   "  pm.expect(Array.isArray(json.errors_sample)).to.be.true;",
-                  "});"
+                  "});",
+                  "console.log(\"response body:\", pm.response.text());\n"
                 ]
               }
             }
