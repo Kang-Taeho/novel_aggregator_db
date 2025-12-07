@@ -6,6 +6,8 @@ import re, logging, math
 from src.scraping.base.net import http_get
 
 log = logging.getLogger(__name__)
+log.propagate = True
+log.setLevel(logging.INFO)
 
 _PER_PAGE = 25  # 한 페이지당 25개
 _MAX_WORKERS = 8 # 테스트 결과로 조정

@@ -1,8 +1,10 @@
 from __future__ import annotations
 import random, time, functools, logging
-from typing import Callable, Iterable, Type
+from typing import Iterable, Type
 
 log = logging.getLogger(__name__)
+log.propagate = True
+log.setLevel(logging.INFO)
 
 def _sleep_with_backoff(attempt: int, base: float, cap: float, jitter: float) -> None:
     back = min(cap, base * (2 ** attempt))

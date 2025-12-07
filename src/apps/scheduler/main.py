@@ -10,6 +10,9 @@ from src.core.config import settings
 from src.apps.scheduler.jobs import do_initial
 
 log = logging.getLogger(__name__)
+log.propagate = True
+log.setLevel(logging.INFO)
+
 _scheduler: BackgroundScheduler | None = None
 
 def _register_jobs(sched: BackgroundScheduler):

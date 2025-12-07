@@ -16,6 +16,8 @@ from src.data.mongo import upsert_meta
 from src.data.repository import upsert_canonical_novel, upsert_novel_source
 
 log = logging.getLogger(__name__)
+log.propagate = True
+log.setLevel(logging.INFO)
 RETRY_EXCEPTIONS = (
     RequestException,
     OperationalError,

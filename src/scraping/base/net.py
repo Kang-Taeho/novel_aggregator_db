@@ -6,7 +6,8 @@ from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log.propagate = True
+log.setLevel(logging.INFO)
 
 _THREAD_LOCAL = threading.local()
 

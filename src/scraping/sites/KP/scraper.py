@@ -4,11 +4,13 @@ import logging, time, re, random
 from src.scraping.base.browser import browser
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
+from selenium.common.exceptions import WebDriverException
 
 log = logging.getLogger(__name__)
+log.propagate = True
+log.setLevel(logging.INFO)
+
 RE_CONTENT_ID = re.compile(r"/content/(\d+)")
 GENRE_URLS = [
     "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=86",   # 판타지
@@ -23,7 +25,7 @@ def _scroll_to_bottom(
         min_jiggle_prob: float = 0.07,
         stable_ticks_needed: int = 2,
         pause_sec: float = 0.3,
-        max_seconds: int = 7200) -> None:
+        max_seconds: int = 4800) -> None:
     """
     무한스크롤 페이지를 끝까지 로드:
     - 높이(scrollHeight)가 연속 stable_ticks_needed번 변하지 않으면 종료
@@ -82,6 +84,7 @@ def fetch_all_pages_set() -> Set[str]:
                 )
             )
             _scroll_to_bottom(drv)
+            time.sleep(5) # 스크롤 최종 마무리 시간
 
             html = drv.page_source
             ids = set(RE_CONTENT_ID.findall(html))
