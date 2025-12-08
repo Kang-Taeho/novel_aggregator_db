@@ -37,8 +37,8 @@ def _register_jobs(sched: BackgroundScheduler):
             jname = f"initial_full-{slug}"
             test_bool = False
 
-        if slug == "KP": max_workers = int(settings.SCRAPE_MAX_WORKERS_KP)
-        elif slug == "NS": max_workers = int(settings.SCRAPE_MAX_WORKERS_NS)
+        if slug == "KP": max_workers = int(settings.SCHED_MAX_WORKERS_KP)
+        elif slug == "NS": max_workers = int(settings.SCHED_MAX_WORKERS_NS)
         else: max_workers = 8
 
         sched.add_job(
