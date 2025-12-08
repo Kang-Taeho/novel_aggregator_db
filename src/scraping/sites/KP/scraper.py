@@ -12,13 +12,13 @@ log.propagate = True
 log.setLevel(logging.INFO)
 
 RE_CONTENT_ID = re.compile(r"/content/(\d+)")
-GENRE_URLS = [
-    "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=86",   # 판타지
-    "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=120",  # 현판
-    "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=89",   # 로맨스
-    "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=117",  # 로판
-    "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=87",   # 무협
-]
+GENRE_URLS = {
+    "fantasy" : "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=86",   # 판타지
+    "mo_fantasy" : "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=120",  # 현판
+    "romance" : "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=89",   # 로맨스
+    "ro_fantasy" : "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=117",  # 로판
+    "wuxia" : "https://page.kakao.com/menu/10011/screen/84?subcategory_uid=87",   # 무협
+}
 
 def _scroll_to_bottom(
         drv,
@@ -36,9 +36,18 @@ def _scroll_to_bottom(
     ten_min = 600
     last_h = 0
     stable = 0
+    retries = 3
 
     while True:
-        drv.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+        try :
+            drv.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+        except WebDriverException :
+            if retries == 0 :
+                log.warning("execute_script failed after %d retries: %s", retries, e)
+                break
+            retries -= 1
+            time.sleep(pause_sec)
+
         if time.time() - t0 > ten_min:
             pause_sec += 0.05
             ten_min += 600
@@ -74,9 +83,9 @@ def fetch_all_pages_set() -> Set[str]:
     1) 각 URL 로드 → 2) 끝까지 스크롤 → 3) series id 한 방에 추출 → 4) 전부 합집합 반환
     """
     found_all_ids: Set[str] = set()
-    for url in GENRE_URLS:
+    for genre, url in GENRE_URLS.items():
         log.info("Loading: %s", url)
-        with browser() as drv:
+        with browser(genre=genre) as drv:
             drv.get(url)
             WebDriverWait(drv, 15).until(
                 EC.presence_of_element_located(
@@ -93,8 +102,8 @@ def fetch_all_pages_set() -> Set[str]:
 
     return found_all_ids
 
-def fetch_detail(product_no: str) -> str:
+def fetch_detail(product_no: str, remote_url: str) -> str:
     """상세 HTML 원문을 가져옵니다."""
-    with browser() as drv:
+    with browser(remote_url=remote_url) as drv:
         drv.get(f"https://page.kakao.com/content/{product_no}")
         return drv.page_source

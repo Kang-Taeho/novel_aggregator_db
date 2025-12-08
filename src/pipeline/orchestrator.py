@@ -3,11 +3,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from importlib import import_module
 import logging
 from time import perf_counter
-
 from requests.exceptions import RequestException
 from sqlalchemy.exc import OperationalError, InterfaceError
 from pymongo.errors import AutoReconnect, ServerSelectionTimeoutError, NetworkTimeout
 
+from src.core.config import settings
 from src.core.retry import retry
 from src.pipeline.normalize import map_age, map_status, map_num, map_date
 from src.pipeline.schemas import NovelParsed
@@ -34,7 +34,8 @@ def _db_process(
     p_no: str,
     p_slug: str,
     scraper,
-    parser) -> dict:
+    parser,
+    remote_url:str ="") -> dict:
     """
     단일 작품 처리 워커:
     - fetch_detail
@@ -47,7 +48,7 @@ def _db_process(
     t0 = perf_counter()
     session = SessionLocal()
     try:
-        html = scraper.fetch_detail(p_no)
+        html = scraper.fetch_detail(p_no, remote_url)
         t_fetch = perf_counter()
         data = parser.parse_detail(html)
         t_parse = perf_counter()
@@ -109,6 +110,13 @@ def _db_process(
     finally:
         session.close()
 
+def kp_batch(remote_url:str, id_list:list[str],
+             p_slug: str,scraper,parser):
+    result = {}
+    for p_no in id_list:
+        result[p_no] = _db_process(p_no,p_slug, scraper, parser, remote_url)
+    return result
+
 def _run(
         p_slug: str,
         sc_fn_name: str,
@@ -134,40 +142,73 @@ def _run(
     log.info("[%s] starting MT run: total=%d, workers=%d", p_slug, process_total, max_workers)
 
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
-        futs = {
-            ex.submit(_db_process, p_no, p_slug, scraper, parser): p_no
-            for p_no in all_ids
-        }
-        # log 정보 코드 (기능과 무관)
-        for fut in as_completed(futs):
-            p_no = futs[fut]
-            try:
-                result = fut.result()
-            except Exception as e:
-                process_failed += 1
-                if len(errors) < 10:
-                    errors.append({"url": f"{p_slug}/{p_no}", "error": str(e)})
-                log.exception("[%s] worker crashed p_no=%s", p_slug, p_no)
-                continue
+        if p_slug == "KP" :
+            num_remotes = min(4, max_workers)
+            chunks = [all_ids[i::4] for i in range(4)]
+            remotes = [
+                        settings.SELENIUM_REMOTE_URL_1,
+                        settings.SELENIUM_REMOTE_URL_2,
+                        settings.SELENIUM_REMOTE_URL_3,
+                        settings.SELENIUM_REMOTE_URL_4
+                       ][:num_remotes]
+            futs = [ex.submit(kp_batch, remote, chunk, p_slug, scraper, parser)
+                    for remote, chunk in zip(remotes, chunks)]
 
-            if result.get("skipped"):
-                skipped += 1
-                continue
+            # KP: 기능과 무관, 로그 처리
+            for fut in as_completed(futs):
+                try:
+                    batch_results = fut.result()
+                except Exception as e:
+                    process_failed += 1
+                    if len(errors) < 10:
+                        errors.append({"url": f"{p_slug}/<batch>", "error": str(e)})
+                    log.exception("[%s] batch worker crashed", p_slug)
+                    continue
 
-            if result.get("ok"):
-                process_ok += 1
-                log.info("[%s] OK p_no=%s fetch=%dms parse=%dms",p_slug,p_no,
-                    result.get("fetch_ms", -1),
-                    result.get("parse_ms", -1),
-                )
-            else:
-                process_failed += 1
-                if len(errors) < 10:
-                    errors.append({"url": f"{p_slug}/{p_no}", "error": result.get("error", "")})
-                log.warning(
-                    "[%s] FAIL p_no=%s error=%s",p_slug,p_no,
-                    result.get("error", ""),
-                )
+                for p_no, result in batch_results.items():
+                    if result.get("skipped"):
+                        skipped += 1
+                        continue
+                    if result.get("ok"):
+                        process_ok += 1
+                    else:
+                        process_failed += 1
+                        if len(errors) < 10:
+                            errors.append({"url": f"{p_slug}/{p_no}", "error": result.get("error", "")})
+                        log.warning("[%s] FAIL p_no=%s error=%s",
+                                    p_slug, p_no, result.get("error", ""))
+
+        elif p_slug == "NS" :
+            futs = {
+                ex.submit(_db_process, p_no, p_slug, scraper, parser): p_no
+                for p_no in all_ids
+            }
+            # NS : 기능과 무관 로그 처리
+            for fut in as_completed(futs):
+                p_no = futs[fut]
+                try:
+                    result = fut.result()
+                except Exception as e:
+                    process_failed += 1
+                    if len(errors) < 10:
+                        errors.append({"url": f"{p_slug}/{p_no}", "error": str(e)})
+                    log.exception("[%s] worker crashed p_no=%s", p_slug, p_no)
+                    continue
+
+                if result.get("skipped"):
+                    skipped += 1
+                    continue
+
+                if result.get("ok"):
+                    process_ok += 1
+                else:
+                    process_failed += 1
+                    if len(errors) < 10:
+                        errors.append({"url": f"{p_slug}/{p_no}", "error": result.get("error", "")})
+                    log.warning(
+                        "[%s] FAIL p_no=%s error=%s",p_slug,p_no,
+                        result.get("error", ""),
+                    )
 
     duration_ms = int((perf_counter() - t_start) * 1000)
     log.info(

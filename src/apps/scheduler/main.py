@@ -17,7 +17,6 @@ _scheduler: BackgroundScheduler | None = None
 
 def _register_jobs(sched: BackgroundScheduler):
     tz = timezone(settings.TZ or "Asia/Seoul")
-    max_workers = int(settings.SCHED_MAX_WORKERS or 8)
 
     test_iv = (int(settings.SCHED_TEST_INTERVAL_HOURS) or
                int(settings.SCHED_TEST_INTERVAL_SECONDS) or 0)
@@ -37,6 +36,10 @@ def _register_jobs(sched: BackgroundScheduler):
             trig = CronTrigger.from_crontab(cron, timezone=tz)
             jname = f"initial_full-{slug}"
             test_bool = False
+
+        if slug == "KP": max_workers = int(settings.SCRAPE_MAX_WORKERS_KP)
+        elif slug == "NS": max_workers = int(settings.SCRAPE_MAX_WORKERS_NS)
+        else: max_workers = 8
 
         sched.add_job(
             func=do_initial,

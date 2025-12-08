@@ -3,6 +3,14 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from src.core.config import settings
 
+GENRE_REMOTE_URLS = {
+    "fantasy" : settings.SELENIUM_REMOTE_URL_1,     # 판타지(1.2만개)
+    "mo_fantasy" : settings.SELENIUM_REMOTE_URL_2,  # 현판(0.9만개)
+    "romance" : settings.SELENIUM_REMOTE_URL_3,     # 로맨스(2.2만개)
+    "ro_fantasy" : settings.SELENIUM_REMOTE_URL_4,  # 로판(1만개)
+    "wuxia" : settings.SELENIUM_REMOTE_URL_2,       # 무협(0.4만개)
+}
+
 BLOCK_URL_PATTERNS = [
     "*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif", "*.svg",
     "*.mp4", "*.webm", "*.m3u8", "*.mp3", "*.wav",
@@ -10,7 +18,7 @@ BLOCK_URL_PATTERNS = [
 ]
 
 @contextmanager
-def browser():
+def browser(genre : str = "", remote_url : str = ""):
     opts = Options()
 
     # ---- 렌더 최적화 스위치 ----
@@ -56,13 +64,21 @@ def browser():
     # ---- 페이지 로드 전략: eager ----
     opts.page_load_strategy = "eager"
 
-    drv = webdriver.Remote(
-        command_executor=settings.SELENIUM_REMOTE_URL,
+    if genre :
+        drv = webdriver.Remote(
+        command_executor=GENRE_REMOTE_URLS[genre],
         options=opts,
-    )
+        )
+    elif remote_url :
+        drv = webdriver.Remote(
+            command_executor=remote_url,
+            options=opts,
+        )
+    else:
+        raise ValueError("browser() requires genre or remote_url")
 
     # ---- 타임아웃/대기 설정 ----
-    drv.set_page_load_timeout(20)   # 페이지 네비게이션 타임아웃
+    drv.set_page_load_timeout(60)   # 페이지 네비게이션 타임아웃
     drv.implicitly_wait(0)          # 암묵적 대기는 0 권장(명시적/JS로만 처리)
 
     try:

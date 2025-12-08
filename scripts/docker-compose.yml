@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+ selenium-1:
+    image: selenium/standalone-chrome:latest
+    shm_size: "2g"
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    ports: ["4441:4444"]
+
+ selenium-2:
+    image: selenium/standalone-chrome:latest
+    shm_size: "2g"
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    ports: [ "4442:4444" ]
+
+ selenium-3:
+    image: selenium/standalone-chrome:latest
+    shm_size: "2g"
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    ports: ["4443:4444"]
+

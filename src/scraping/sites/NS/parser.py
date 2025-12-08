@@ -25,8 +25,8 @@ def parse_detail(html: str) -> Dict[str, Any]:
         "keywords": None,           # 불가
         "episode_count": None,
     }
-    # 19세 이상 로그인 시 정보열람 가능
-    if "19세 미만의 청소년이 이용할 수 없습니다" in html : return data
+    # 19세 이상 로그인 시 정보열람 가능 및 오류?
+    if "19세 미만의 청소년이 이용할 수 없습니다" in html or "서비스 페이지에 접속할 수 없습니다." in html: return data
 
     soup = BeautifulSoup(html, "lxml")
     # 작품 ID
