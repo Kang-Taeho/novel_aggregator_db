@@ -12,7 +12,7 @@ def test_jobs_api_json_success(monkeypatch):
     monkeypatch.setattr("src.apps.api.routers.jobs.run_pipeline", fake_run)
 
     with TestClient(app) as c:
-        r = c.post("/jobs/scrape?platform_slug=KP&max_workers=2")
+        r = c.post("/jobs/scrape?platform_slug=KP")
         assert r.status_code == 200
         body = r.json()
         assert body["success"] == 2
@@ -27,7 +27,7 @@ def test_jobs_api_json_failure(monkeypatch):
     monkeypatch.setattr("src.apps.api.routers.jobs.run_pipeline", fail)
 
     with TestClient(app) as c:
-        r = c.post("/jobs/scrape?platform_slug=KP&max_workers=2")
+        r = c.post("/jobs/scrape?platform_slug=KP")
         assert r.status_code == 500
         body = r.json()
         assert "error" in body

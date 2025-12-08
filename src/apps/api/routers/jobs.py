@@ -25,8 +25,8 @@ class ScrapeJobResponse(BaseModel):
 def scrape_job(
     platform_slug: str = Query(..., description="플랫폼 코드, 예: KP, NS")
 ):
-    if platform_slug == "KP": max_workers = int(settings.SCRAPE_MAX_WORKERS_KP)
-    elif platform_slug == "NS": max_workers = int(settings.SCRAPE_MAX_WORKERS_NS)
+    if platform_slug == "KP": max_workers = int(settings.SCHED_MAX_WORKERS_KP)
+    elif platform_slug == "NS": max_workers = int(settings.SCHED_MAX_WORKERS_NS)
     else : max_workers = 8
 
     try:
