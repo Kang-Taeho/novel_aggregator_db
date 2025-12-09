@@ -144,6 +144,7 @@ def _run(
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         if p_slug == "KP" :
             num_remotes = min(4, max_workers)
+            all_ids = list(all_ids)
             chunks = [all_ids[i::4] for i in range(4)]
             remotes = [
                         settings.SELENIUM_REMOTE_URL_1,
