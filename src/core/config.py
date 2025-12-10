@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     TZ: str = "Asia/Seoul"
     SCHED_MAX_WORKERS_KP : str = "4"
     SCHED_MAX_WORKERS_NS : str = "8"
-    SCHED_TEST_INTERVAL_HOURS : str = "6" #테스트 목적  (실전 0 , 테스트 >0 )
+    SCHED_TEST_INTERVAL_HOURS : str = "0" #테스트 목적  (실전 0 , 테스트 >0 )
     SCHED_TEST_INTERVAL_SECONDS: str = "0" #테스트 목적  (실전 0 , 테스트 >0 )
 
     CRON_KAKAOPAGE: str = "0 1 1 * *"
