@@ -33,14 +33,14 @@ MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행
 - 응답에 `total / success / failed / skipped / duration_ms / errors_sample` 포함 여부 검증
 - 실패 시에도 JSON 표준 에러 형식 반환 확인
 
-### 2️⃣ DB Upsert / Idempotency 검증
+### 2️⃣ KP Selenium 안정성 검증
+- standalone-chrome 4개 환경에서 세션 재사용 + retry + timeout 상한 전략 검증
+- 무한스크롤 및 상세 파싱 정상 동작 확인
+
+### 3️⃣ DB Upsert / Idempotency 검증
 - 동일 작품 반복 수집 시 중복 생성 방지
 - 변경 필드만 갱신(MySQL novel + novel source)
 - MongoDB 설명/키워드 Upsert 안정성 확인
-
-### 3️⃣ KP Selenium 안정성 검증
-- standalone-chrome 4개 환경에서 세션 재사용 + retry + timeout 상한 전략 검증
-- 무한스크롤 및 상세 파싱 정상 동작 확인
 
 ---
 
@@ -55,7 +55,6 @@ MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행
 - [License](#-license)
 
 ---
-<a id="features"></a>
 ## 🚀 Features
 
 ### 🔍 Scraping
@@ -63,23 +62,27 @@ MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행
 - **NaverSeries:** 정적 페이지 / 페이지네이션
 
 ### 🧩 Parsing & Normalization
-- 플랫폼별 다른 메타를 **공통 스키마로 정규화**
-- 지원/미지원 범위 명확화
+- 플랫폼별 다른 메타데이터를 **공통 스키마로 정규화**
+- [공통] <br>
+  title, author_name, genre, platform_item_id, age_rating, description, view_count, completion_status
+- [미지원] <br>
+  (kakao page) keywords, episode_count <br>
+  (naver series) first_episode_date, keywords 
 
 ### 🗄 Storage
-- **MySQL:** 정형 메타 저장
-- **MongoDB:** 유연 필드 저장(설명, 키워드 등)
-- 안정적인 Upsert 정책 적용
+- **MySQL:** 정형 메타 저장 , DB구조(script/schema_and_seed.sql)
+- **MongoDB:** 유연 필드 저장(description, keywords 등)
 
 ### ⚙️ Orchestration
 - 플랫폼별 병렬 처리 전략 적용
+- [KP] : selenium grid와 비슷한 방식을 적용한 병렬처리
+- [NS] : thread를 사용한 병렬처리
 
 ### 📈 Observability
-- 로그 수집
-- 실행 결과 리턴(`skip`, `fail`, `error_samples`)
-- Job 실행 기록 저장
+- 로그 수집 : 중요 작업이 끝날 때마다 log 출력
+- 실행 기록 저장 : job_runs 테이블(MySQL)에 작업 결과 저장 
 
 ---
 
 ## 🏗 Architecture
-
+[
