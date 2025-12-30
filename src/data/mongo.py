@@ -8,6 +8,13 @@ def get_client():
     return _client
 
 def upsert_meta(title, author_name, description, keywords):
+    """
+       메타데이터 document를 upsert 한다.
+       1) title + author_name 기준으로 document 존재하면
+           - keywords(인자)가 있으면 keywords만 업데이트 후 해당 id 반환
+           - keywords(인자) 없으면 기존 id 그대로 반환
+       2) 존재하지 않으면 새 document 생성 후 Mongo ObjectId 반환
+       """
     col = get_client()[settings.MONGODB_DB][settings.MONGODB_META_COLLECTION]
     doc = {"title": title, "author_name": author_name, "description": description, "keywords": keywords or []}
     mongo_doc_id = col.find_one({"title": title, "author_name": author_name}, {"_id": 1}) or None

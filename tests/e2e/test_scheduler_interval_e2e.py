@@ -7,6 +7,17 @@ from src.core import config
 from src.apps.api.main import app
 from src.data.database import SessionLocal
 
+"""
+APScheduler Interval 기반 자동 실행 E2E 테스트
+
+검증 목표
+---------
+1) scheduler 가 interval trigger 로 실제 job 을 실행하는지 확인
+2) job_runs 테이블에 기록이 생성되는지 확인
+3) status = SUCCEEDED 인지 확인
+4) metrics_json 값까지 정상 저장되는지 확인
+"""
+
 def test_interval_triggers_job(monkeypatch):
     monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_HOURS", "0")
     monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_SECONDS", "2")

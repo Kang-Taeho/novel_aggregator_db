@@ -1,6 +1,45 @@
 version: "3.8"
 
 services:
+ mysql:
+    image: mysql:8.4
+    container_name: novels-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "0000"
+      MYSQL_DATABASE: "novel_db"
+    command:
+      # 한글 깨짐 방지
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      # 컨테이너 최초 생성 시 초기 스키마 & 데이터 자동 적용
+      - mysql_data:/var/lib/mysql
+      - ./scripts/schema_and_seed.sql:/docker-entrypoint-initdb.d/01_schema_and_seed.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p0000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+ mongo:
+    image: mongo:7
+    container_name: novels-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      # 컨테이너 최초 생성 시 초기 스키마 & 데이터 자동 적용
+      - mongo_data:/data/db
+      - ./scripts/mongo_init.js:/docker-entrypoint-initdb.d/mongo_init.js
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
  selenium-1:
     image: selenium/standalone-chrome:latest
     shm_size: "2g"
@@ -8,20 +47,50 @@ services:
       - SE_NODE_MAX_SESSIONS=1
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
     ports: ["4441:4444"]
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:4444/status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
  selenium-2:
     image: selenium/standalone-chrome:latest
     shm_size: "2g"
     environment:
+      # 세션당 1개의 selenium chrome만 가능
       - SE_NODE_MAX_SESSIONS=1
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
     ports: [ "4442:4444" ]
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:4444/status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
  selenium-3:
     image: selenium/standalone-chrome:latest
     shm_size: "2g"
     environment:
+      # 세션당 1개의 selenium chrome만 가능
       - SE_NODE_MAX_SESSIONS=1
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
     ports: ["4443:4444"]
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:4444/status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
+ selenium-4:
+    image: selenium/standalone-chrome:latest
+    shm_size: "2g"
+    environment:
+      # 세션당 1개의 selenium chrome만 가능
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    ports: ["4444:4444"]
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:4444/status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10

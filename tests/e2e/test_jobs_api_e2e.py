@@ -3,6 +3,20 @@ from fastapi.testclient import TestClient
 from src.apps.api.main import app
 from src.core import config
 
+"""
+Jobs API E2E 테스트
+
+검증 목적
+---------
+1) /jobs/scrape API 성공 응답 시나리오
+   - 내부 run_pipeline 을 stub 으로 교체
+   - 정상 JSON 응답 + 필드 값 검증
+
+2) /jobs/scrape API 실패 응답 시나리오
+   - run_pipeline 에 의도적으로 예외 발생
+   - HTTP 500 + 표준 에러 JSON 반환 확인
+"""
+
 def test_jobs_api_json_success(monkeypatch):
     monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_HOURS", "0")
     monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_SECONDS", "30")

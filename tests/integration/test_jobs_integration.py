@@ -5,6 +5,16 @@ from src.apps.scheduler.jobs import do_initial
 from src.data.database import SessionLocal
 
 def test_do_daily_success(monkeypatch):
+    """
+    APScheduler job 실행 흐름 통합 테스트
+
+    검증 목표
+    ---------
+    do_initial() 실행 시
+       - run_pipeline 을 실제로 실행하지 않고 stub 으로 대체(monkeypatch)
+       - JobRun DB 기록이 정상적으로 생성되는지 확인
+       - status 가 SUCCEEDED 로 저장되는지 확인
+    """
     monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_HOURS", "0")
     monkeypatch.setattr(config.settings,"SCHED_TEST_INTERVAL_SECONDS", "2")
 

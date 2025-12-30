@@ -4,6 +4,9 @@ from typing import Optional
 import re
 
 def map_age(age_raw: str | None) -> str:
+    """
+    연령 제한 문자열을 표준화된 코드로 변환한다.
+    """
     if not age_raw: return "ALL"
     a = age_raw.strip().lower()
     if "12" in a or "twelve" in a : return "12"
@@ -12,6 +15,9 @@ def map_age(age_raw: str | None) -> str:
     else : return "ALL"
 
 def map_status(raw: str | None) -> str:
+    """
+       작품 상태 문자열을 표준 상태코드로 변환한다.
+    """
     if not raw: return "unknown"
     r = raw.strip().lower()
     if "연재" in r or "ing" in r or "ongoing" in r : return "ongoing"
@@ -20,6 +26,9 @@ def map_status(raw: str | None) -> str:
     else : return "unknown"
 
 def map_num(s: str | int) -> int:
+    """
+    숫자/조회수/카운트 문자열을 정수 값으로 변환한다.
+    """
     if not s : return 0
     s= str(s)
     s = s.replace(",", "")
@@ -32,8 +41,17 @@ def map_num(s: str | int) -> int:
     else:
         return int(num)
 
-
 def map_date(s: str | date | datetime) -> Optional[date]:
+    """
+       다양한 날짜 표현을 date 객체로 변환한다.
+
+       지원 타입
+       ---------
+       - date → 그대로 반환
+       - datetime → date 로 변환
+       - 문자열 → 여러 포맷 시도
+       - None → None
+    """
     if s is None:
         return None
     # s = date 타입
@@ -56,7 +74,7 @@ def map_date(s: str | date | datetime) -> Optional[date]:
         formats = (
             "%y.%m.%d", "%Y.%m.%d",
             "%y-%m-%d", "%Y-%m-%d",
-            "%Y.%m.%d %H:%M", # munpia 시간
+            "%Y.%m.%d %H:%M",
         )
         for fmt in formats:
             try:

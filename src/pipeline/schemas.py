@@ -1,7 +1,15 @@
-# src/pipeline/schemas.py
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Literal
 from datetime import date
+
+"""
+크롤링 → 파싱 → 정규화 이후,
+DB에 저장되기 전 단계에서 사용하는 **정형화 데이터 스키마**
+
+✔ 파싱 결과에 대한 구조 보장
+✔ 필드 타입/제약 조건 검증
+✔ 불필요한 필드는 자동 무시 (extra="ignore")
+"""
 
 Age = Literal["ALL","12","15","19"]
 Status = Literal["ongoing","completed","hiatus","unknown"]

@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     SELENIUM_REMOTE_URL_4: str = "http://localhost:4443/wd/hub"
     HEADLESS: bool = True
     S_USER_AGENT: str | None = None
-
     R_USER_AGENT : str | None = None
 
     TZ: str = "Asia/Seoul"
