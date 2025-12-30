@@ -71,8 +71,10 @@ MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행
   (naver series) first_episode_date, keywords 
 
 ### 🗄 Storage
-- **MySQL:** 정형 메타 저장 , [DB구조](script/schema_and_seed.sql)
-- **MongoDB:** 유연 필드 저장(description, keywords 등)
+- **MySQL:** 정형 메타 저장 <br>
+  DB Model : [schema_and_seed.sql](scripts/schema_and_seed.sql)
+- **MongoDB:** 유연 필드 저장(description, keywords 등) <br>
+  DB Model : [mongo_init.js](scripts/mongo_init.js)
 
 ### ⚙️ Orchestration
 - 플랫폼별 병렬 처리 전략 적용
