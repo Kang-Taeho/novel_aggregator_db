@@ -1,7 +1,7 @@
 [project]
 name = "novel-aggregator-db"
 version = "0.1.0"
-description = "selenium 웹스크래핑 -> 소설 메타데이터 MySQL/MongoDB 저장 -> API 감싸기 -> 스케쥴러"
+description = "웹소설 플랫폼의 작품 메타데이터를 수집 → 정규화 → 저장 → API 제공"
 requires-python = ">=3.12"
 readme = "README.md"
 dependencies = [
