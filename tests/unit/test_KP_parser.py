@@ -2,13 +2,14 @@ from src.scraping.sites.KP.parser import parse_detail
 from src.scraping.sites.KP.scraper import fetch_detail
 from src.pipeline.schemas import NovelParsed
 from src.pipeline.normalize import map_age, map_status, map_num, map_date
+from src.core.config import settings
 from datetime import date
 import logging
 
 log = logging.getLogger(__name__)
 SAMPLE_DETAIL_URL = [
-    fetch_detail(65171279),
-    fetch_detail(57868498),
+    fetch_detail(65171279,settings.SELENIUM_REMOTE_URL_1),
+    fetch_detail(57868498,settings.SELENIUM_REMOTE_URL_2),
 ]
 
 def test_parse_detail():

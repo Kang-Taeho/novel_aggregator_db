@@ -1,6 +1,8 @@
 
 import pytest
 from fastapi.testclient import TestClient
+from src.data.database import SessionLocal
+from src.data import models
 # FastAPI 앱(실제 main.py) 임포트
 from src.apps.api.main import app
 
@@ -19,12 +21,18 @@ def client():
 
 def test_scheduler_triggers(monkeypatch):
     from src.apps.scheduler.jobs import do_initial
-    calls = []
     def fake_run(**kw):
-        calls.append(kw); return {"total":1,"success":1,"failed":0,"skipped":0,"duration_ms":10,"errors_sample":[]}
+
+        return {"total":1,"success":1,"failed":0,"skipped":0,"duration_ms":10,"errors_sample":[]}
+
     # orchestrator 함수 대체
     monkeypatch.setattr("src.apps.scheduler.jobs.run_pipeline", lambda **k: fake_run(**k))
-    # 직접 호출
-    jr = do_initial(platform_slug="KP", max_workers=2, test_bool=True)
+
+    jr = do_initial(platform_slug="test", max_workers=2, test_bool=True)
     assert jr is not None
     assert jr["status"] == "SUCCEEDED"
+
+    with (SessionLocal() as db):
+        db.query(models.JobRun
+                 ).filter(models.JobRun.platform == "test").delete()
+        db.commit()

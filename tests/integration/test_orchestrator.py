@@ -1,7 +1,7 @@
-import pytest
 from src.pipeline import orchestrator
 from src.data.database import SessionLocal
 from src.data import models
+from src.data.mongo import delete_meta
 
 def test_run_initial_full_handles_parse_error(monkeypatch):
     class FakeScraper:
@@ -10,7 +10,7 @@ def test_run_initial_full_handles_parse_error(monkeypatch):
             return ["ok1", "bad", "ok2"]
 
         @staticmethod
-        def fetch_detail(p_no: str) -> str:
+        def fetch_detail(p_no: str, remote_url : str) -> str:
             return f"<html>{p_no}</html>"
 
     class FakeParser:
@@ -44,6 +44,7 @@ def test_run_initial_full_handles_parse_error(monkeypatch):
 
     monkeypatch.setattr(orchestrator, "import_module", fake_import_module)
 
+   # ---------------- KP TEST ----------------
     result = orchestrator.run_initial_full(platform_slug="KP", max_workers=3)
 
     assert result["total"] == 3
@@ -51,7 +52,28 @@ def test_run_initial_full_handles_parse_error(monkeypatch):
     assert result["failed"] == 1
     assert len(result["errors_sample"]) >= 1
 
-    with SessionLocal() as db:
-        db.query(models.NovelSource).delete()
-        db.query(models.Novel).delete()
+    with (SessionLocal() as db):
+        db.query(models.NovelSource
+                 ).filter(models.NovelSource.platform_item_id.in_(["ok1", "bad", "ok2"])).delete()
+        db.query(models.Novel).filter(models.Novel.genre=="테스트").delete()
         db.commit()
+        delete_meta("Title ok1","Tester")
+        delete_meta("Title ok2", "Tester")
+        delete_meta("Title bad", "Tester")
+
+    # ---------------- NS TEST ----------------
+    result = orchestrator.run_initial_full(platform_slug="NS", max_workers=3)
+
+    assert result["total"] == 3
+    assert result["success"] == 2
+    assert result["failed"] == 1
+    assert len(result["errors_sample"]) >= 1
+
+    with (SessionLocal() as db):
+        db.query(models.NovelSource
+                 ).filter(models.NovelSource.platform_item_id.in_(["ok1", "bad", "ok2"])).delete()
+        db.query(models.Novel).filter(models.Novel.genre == "테스트").delete()
+        db.commit()
+        delete_meta("Title ok1","Tester")
+        delete_meta("Title ok2", "Tester")
+        delete_meta("Title bad", "Tester")
