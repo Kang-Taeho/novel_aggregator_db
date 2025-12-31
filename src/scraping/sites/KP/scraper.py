@@ -41,7 +41,7 @@ def _scroll_to_bottom(
     while True:
         try :
             drv.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-        except WebDriverException :
+        except WebDriverException as e:
             if retries == 0 :
                 log.warning("execute_script failed after %d retries: %s", retries, e)
                 break
