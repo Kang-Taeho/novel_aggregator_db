@@ -1,4 +1,3 @@
-# tests/e2e/test_scheduler_interval_e2e.py
 import time, json
 from fastapi.testclient import TestClient
 from sqlalchemy import text
@@ -8,7 +7,7 @@ from src.apps.api.main import app
 from src.data.database import SessionLocal
 
 """
-APScheduler Interval 기반 자동 실행 E2E 테스트
+APScheduler Interval 기반 자동 실행 테스트
 
 검증 목표
 ---------
