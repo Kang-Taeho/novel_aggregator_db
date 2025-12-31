@@ -1,8 +1,8 @@
-소설 웹사이트 이용약관
+소설 웹사이트 이용약관 & robots.txt
 
 
 
-#### **카카오페이지**
+### **카카오페이지**
 
 제 13 조 (저작권 기타 법적 권리)
 
@@ -21,8 +21,9 @@ Disallow: /viewer
 Disallow: /store/kakaopage/webseries/viewer
 
 
+---
 
-#### **네이버시리즈**
+### **네이버시리즈**
 
 네이버는 아래의 경우를 제외하고, 자동화된 수단 및 방식(예: 매크로 프로그램, 로봇\[봇], 크롤러, 스파이더, 스크래퍼 등)으로 네이버 서비스 또는 네이버의 API 서버 등에 접속하거나 정보를 수집하는 행위를 금지합니다.
 
@@ -67,8 +68,8 @@ Disallow: /viewer
 Disallow: /search
 
 
-
-#### **노벨피아**
+---
+### **노벨피아**
 
 User-agent: \*
 
@@ -103,10 +104,10 @@ Disallow: /comic\_viewer/
 
 
 
+---
 
 
-
-#### **문피아**
+### **문피아**
 
 User-agent: Twitterbot
 
@@ -131,6 +132,7 @@ Disallow: /tpl/
 Disallow: /widget/
 
 Disallow: /page/goods\_event
+
 
 
 
