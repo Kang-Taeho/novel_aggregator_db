@@ -27,7 +27,7 @@ def upsert_meta(title : str, author_name : str, description, keywords):
     finally:
         client.close()
 
-def test_delete_meta(title, author_name):
+def delete_meta(title, author_name):
     """
         테스트 목적 document 제거
     """
