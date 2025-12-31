@@ -96,5 +96,5 @@ def fetch_all_pages_set() -> Set[str]:
     return found_all_ids
 
 
-def fetch_detail(product_no: str, remote_url: str) -> str:
+def fetch_detail(product_no: str, remote_url: str="") -> str:
     return http_get(f"https://series.naver.com/novel/detail.series?productNo={product_no}")
