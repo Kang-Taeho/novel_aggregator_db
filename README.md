@@ -76,7 +76,7 @@ MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행
   DB Data  : backup-data.sql(KP,NS 전체 소설 데이터 2025년 9월 기준)
 - **MongoDB:** 유연 필드 저장(description, keywords 등) <br>
   DB Model : [mongo_init.js](scripts/mongo_init.js)    <br>
-  DB Data : 설명은 저작권 배포에 걸릴 여지가 있으므로 생략하겠습니다.
+  DB Data : 소설 설명은 저작권 배포에 걸릴 여지가 있으므로 올리지 않겠습니다.
 
 ### ⚙️ Orchestration
 - 플랫폼별 병렬 처리 전략 적용
@@ -231,6 +231,13 @@ platform_slug:
   1. 컨테이너 1개당 크롬 세션 1개 (selenium webdriver 특징)
   2. 전체 작품 하나의 컨테이너로 무한스크롤시 500에러 높은 확률로 발생
   3. 스레드를 위해 여러 크롬 세션을 사용할 시 그에 맞는 컨테이너 수 필수
+
+### DB
+아래의 규칙에 따라 스키마/관계 설정
+- 소설 자체에서 얻는 데이터와 플랫폼에서 얻는 데이터 테이블 분리
+- 소설 정보는 하나이나 그 소설 연재 플랫폼 정보는 여러 개일 수 있습니다.
+- 추후 다른 소설 플랫폼을 추가 가능성을 고려해 별개의 테이블 생성
+- 유지/보수/추가 기능을 위한 칼럼 추가 (ex. 해당 rowd의 created_at/update_at)
 
 ---
 <a id="license"></a>
