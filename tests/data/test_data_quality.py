@@ -116,16 +116,18 @@ def collect_quality(session: Session, collection : Collection) -> dict:
     docs = collection.aggregate(mongo_pipeline)
     pds_dict["dup_des_pd"] = pd.DataFrame(list(docs))
 
-    # ---------------- 3).2 중복 : 플랫폼 중복 소설  ----------------
+    # ---------------- 3).2 중복 : 같은 플랫폼 중복 소설  ----------------
     mysql_query = text("""
-                    SELECT dup_count, COUNT(*) AS group_count
-                    FROM(
-                        SELECT novel_id, COUNT(*) AS dup_count
-                        FROM novel_sources
-                        GROUP BY novel_id
-                        HAVING COUNT(*) > 1 ) t
-                    GROUP BY dup_count 
-                """)
+                    SELECT 
+                        slug,
+                        novel_id,
+                        COUNT(*) AS cnt
+                    FROM novel_sources AS a
+                        JOIN platforms AS b 
+                        ON a.platform_id = b.id
+                    GROUP BY slug, novel_id
+                    HAVING COUNT(*) > 1;
+                    """)
     rows = session.execute(mysql_query).mappings().all()
     pds_dict["dup_plf_pd"] = pd.DataFrame(rows)
 
@@ -183,22 +185,22 @@ def render_markdown(pds_dict : dict, total_num_dict : dict) -> str:
     lines.append("## 이상치 통계")
     lines.append(pds_dict["outlier_pd"].to_markdown(index=False))
     lines.append("")
-    lines.append("## 결측치 비율")
+    lines.append("## 결측치 검사")
     lines.append(pds_dict["missing_pd"].to_markdown(index=False))
     lines.append("")
     lines.append("## 중복 비율")
     lines.append("### description 중복")
     lines.append(pds_dict["dup_des_pd"].to_markdown(index=False))
     lines.append("")
-    lines.append("### 플랫폼 중복 소설 (현재 KP,NS)")
-    lines.append(pds_dict["dup_plf_pd"].to_markdown(index=False))
+    lines.append("### 같은 플랫폼 중복 소설")
+    lines.append(pds_dict["dup_plf_pd"].to_markdown(index=True))
     lines.append("")
     lines.append("## Rule 위반 (매핑 안 된 것들)")
     lines.append("### MySQL만 존재")
-    lines.append(pds_dict["mysql_only_pd"].to_markdown(index=False))
+    lines.append(pds_dict["mysql_only_pd"].reset_index(drop=True).to_markdown(index=True))
     lines.append("")
     lines.append("### MongoDB만 존재")
-    lines.append(pds_dict["mongo_only_pd"].to_markdown(index=False))
+    lines.append(pds_dict["mongo_only_pd"].reset_index(drop=True).to_markdown(index=True))
     lines.append("")
     return "\n".join(lines)
 
