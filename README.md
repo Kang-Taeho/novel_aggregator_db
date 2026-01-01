@@ -25,7 +25,7 @@ MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행
 
 | 항목 | 설명 |
 |------|------|
-| QA Guide | `docs/QA.md` |
+| QA Guide | [docs/QA.md](docs/QA.md) |
 | Test Report | `docs/test-report.md` |
 
 ### 1️⃣ E2E Job Trigger 검증 (Postman / Newman)
