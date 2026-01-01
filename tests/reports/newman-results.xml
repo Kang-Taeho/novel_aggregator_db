@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="novel-aggregator" tests="1" time="107116.586">
+  <testsuite name="Jobs / POST /jobs/scrape (KP, full)" id="a1e3996a-bcbe-4995-9ee5-4ed8fc92cd46" timestamp="2025-12-11T01:08:17.919Z" tests="4" failures="0" errors="0" time="107116.586">
+    <testcase name="status is 200" time="107116.586" classname="JobsPostJobsScrapeKpFull"/>
+    <testcase name="basic fields exist" time="107116.586" classname="JobsPostJobsScrapeKpFull"/>
+    <testcase name="platform_slug matches KP" time="107116.586" classname="JobsPostJobsScrapeKpFull"/>
+    <testcase name="errors_sample is array" time="107116.586" classname="JobsPostJobsScrapeKpFull"/>
+  </testsuite>
+</testsuites>

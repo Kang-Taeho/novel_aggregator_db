@@ -211,7 +211,7 @@ def test_data_quality_report():
     try:
         collection = c[settings.MONGODB_DB][settings.MONGODB_META_COLLECTION]
         pds_dict, total_num_dict = collect_quality(s, collection)
-        Path("./tests/quantity/data_quantity_report.md").write_text(render_markdown(pds_dict, total_num_dict), encoding="utf-8")
+        Path("./tests/reports/data_quantity_report.md").write_text(render_markdown(pds_dict, total_num_dict), encoding="utf-8")
     finally:
         c.close()
         s.close()
