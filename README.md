@@ -1,4 +1,4 @@
-#  Novel Aggregator DB
+#  Novel Aggregator 
 
 여러 **웹소설 플랫폼의 작품 메타데이터를 수집 → 정규화 → 저장 → API 제공**까지 수행하는 파이프라인 프로젝트입니다.  
 MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행을 지원합니다.
