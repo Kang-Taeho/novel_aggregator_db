@@ -37,10 +37,10 @@ MySQL + MongoDB 기반으로 동작하며, API 트리거 및 스케줄러 실행
 - standalone-chrome 4개 환경에서 세션 재사용 + retry + timeout 상한 전략 검증
 - 무한스크롤 및 상세 파싱 정상 동작 확인
 
-### 3️⃣ DB Upsert / Idempotency 검증
-- 동일 작품 반복 수집 시 중복 생성 방지
-- 변경 필드만 갱신(MySQL novel + novel source)
-- MongoDB 설명/키워드 Upsert 안정성 확인
+### 3️⃣ DB 품질 테스트
+- 데이터 이상치/결측치 검사
+- 스키마 제약으로 해결 되지 않은 중복 검사
+- 정해진 Rule에 벗어난 데이터 목록 검사
 
 ---
 
@@ -135,7 +135,7 @@ novel-aggregator/
 │  └─ apps/
 │     ├─ api/              # FastAPI (jobs API)
 │     └─ scheduler/        # APScheduler (크론 작업)
-├─ tests/                  # 테스트
+├─ tests/...               # 테스트
 ├─ .env.example            # 환경 변수 템플릿
 └─ pyproject.toml          # 의존성 관리
 ```
@@ -234,10 +234,10 @@ platform_slug:
 
 ### DB Schema
 아래의 규칙에 따라 스키마/관계 설정
-- 소설 자체에서 얻는 데이터와 플랫폼에서 얻는 데이터 테이블 분리
+- 소설 자체에서 얻는 데이터와 플랫폼에서 얻는 데이터 테이블 분리합니다.
 - 소설 정보는 하나이나 그 소설 연재 플랫폼 정보는 여러 개일 수 있습니다.
-- 추후 다른 소설 플랫폼을 추가 가능성을 고려해 별개의 테이블 생성
-- 유지/보수/추가 기능을 위한 칼럼 추가 (ex. 해당 rowd의 created_at/update_at)
+- 소설 내용 / 키워드 같은 정형화 되지 않는 긴 데이터는 MongoDB에 저장합니다.
+- 소설 정보 DB와 소설 내용 DB는 1대1 관계로 매치되어야합니다.
 
 ---
 <a id="license"></a>
@@ -245,5 +245,5 @@ platform_slug:
 [TERMS.md](TERMS.md) 참고
 - KakaoPage — 저작권 침해 없는 범위 내 허용
 - NaverSeries — robots.txt 허용 범위 내 접근 허용
-- Novelpia — 일반 UA 크롤링 불가
-- Munpia — 일반 UA 크롤링 불가
+- Novelpia — 일반 User-agent 크롤링 불가
+- Munpia — 일반 User-agent 크롤링 불가
