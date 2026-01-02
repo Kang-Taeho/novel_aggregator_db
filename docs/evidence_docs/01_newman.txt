@@ -1,0 +1,87 @@
+POST jobs/scrape (KP)
+  ┌
+  │ 'response body:', `{"platform_slug":"KP","sc_fn":"fetch_all_pages_set","total":57372,"success":167,"failed":5720
+  │ 3,"skipped":2,"errors_sample":[{"url":"KP/57439031","error":"Message: Could not start a new session. No nodes support the capabilities in
+  │  the request \\nHost info: host: '2310c00400fc', ip: '172.17.0.3'\\nBuild info: version: '4.35.0', revision: '1c58e5028b'\\nSystem info: 
+  │ os.name: 'Linux', os.arch: 'amd64', os.version: '6.6.87.2-microsoft-standard-WSL2', java.version: '21.0.8'\\nDriver info: driver.version:
+  │  unknown; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionn
+  │ otcreatedexception\\nStacktrace:\\n    at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRunnable.checkMatchingSlo
+  │ t (LocalDistributor.java:573)\\n    at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRunnable.run (LocalDistribut
+  │ or.java:555)\\n    at org.openqa.selenium.concurrent.GuardedRunnable.lambda$guard$0 (GuardedRunnable.java:35)\\n    at java.util.concurre
+  │ nt.Executors$RunnableAdapter.call (Executors.java:572)\\n    at java.util.concurrent.FutureTask.runAndReset (FutureTask.java:358)\\n    a
+  │ t java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run (ScheduledThreadPoolExecutor.java:305)\\n    at java.util.conc
+  │ urrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.java:1144)\\n    at java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoo
+  │ lExecutor.java:642)\\n    at java.lang.Thread.run (Thread.java:1583)"},{"url":"KP/57386057","error":"Message: Could not start a new sessi
+  │ on. No nodes support the capabilities in the request \\nHost info: host: '2310c00400fc', ip: '172.17.0.3'\\nBuild info: version: '4.35.0'
+  │ , revision: '1c58e5028b'\\nSystem info: os.name: 'Linux', os.arch: 'amd64', os.version: '6.6.87.2-microsoft-standard-WSL2', java.version:
+  │  '21.0.8'\\nDriver info: driver.version: unknown; For documentation on this error, please visit: https://www.selenium.dev/documentation/w
+  │ ebdriver/troubleshooting/errors#sessionnotcreatedexception\\nStacktrace:\\n    at org.openqa.selenium.grid.distributor.local.LocalDistrib
+  │ utor$NewSessionRunnable.checkMatchingSlot (LocalDistributor.java:573)\\n    at org.openqa.selenium.grid.distributor.local.LocalDistributo
+  │ r$NewSessionRunnable.run (LocalDistributor.java:555)\\n    at org.openqa.selenium.concurrent.GuardedRunnable.lambda$guard$0 (GuardedRunna
+  │ ble.java:35)\\n    at java.util.concurrent.Executors$RunnableAdapter.call (Executors.java:572)\\n    at java.util.concurrent.FutureTask.r
+  │ unAndReset (FutureTask.java:358)\\n    at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run (ScheduledThreadPoolEx
+  │ ecutor.java:305)\\n    at java.util.concurrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.java:1144)\\n    at java.util.concurrent.
+  │ ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:642)\\n    at java.lang.Thread.run (Thread.java:1583)"},{"url":"KP/61524726","erro
+  │ r":"Message: Could not start a new session. No nodes support the capabilities in the request \\nHost info: host: '2310c00400fc', ip: '172
+  │ .17.0.3'\\nBuild info: version: '4.35.0', revision: '1c58e5028b'\\nSystem info: os.name: 'Linux', os.arch: 'amd64', os.version: '6.6.87.2
+  │ -microsoft-standard-WSL2', java.version: '21.0.8'\\nDriver info: driver.version: unknown; For documentation on this error, please visit: 
+  │ https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception\\nStacktrace:\\n    at org.openqa.sele
+  │ nium.grid.distributor.local.LocalDistributor$NewSessionRunnable.checkMatchingSlot (LocalDistributor.java:573)\\n    at org.openqa.seleniu
+  │ m.grid.distributor.local.LocalDistributor$NewSessionRunnable.run (LocalDistributor.java:555)\\n    at org.openqa.selenium.concurrent.Guar
+  │ dedRunnable.lambda$guard$0 (GuardedRunnable.java:35)\\n    at java.util.concurrent.Executors$RunnableAdapter.call (Executors.java:572)\\n
+  │     at java.util.concurrent.FutureTask.runAndReset (FutureTask.java:358)\\n    at java.util.concurrent.ScheduledThreadPoolExecutor$Schedu
+  │ ledFutureTask.run (ScheduledThreadPoolExecutor.java:305)\\n    at java.util.concurrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.j
+  │ ava:1144)\\n    at java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:642)\\n    at java.lang.Thread.run (Thread
+  │ .java:1583)"},{"url":"KP/66366687","error":"Message: Could not start a new session. No nodes support the capabilities in the request \\nH
+  │ ost info: host: '2310c00400fc', ip: '172.17.0.3'\\nBuild info: version: '4.35.0', revision: '1c58e5028b'\\nSystem info: os.name: 'Linux',
+  │  os.arch: 'amd64', os.version: '6.6.87.2-microsoft-standard-WSL2', java.version: '21.0.8'\\nDriver info: driver.version: unknown; For doc
+  │ umentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexceptio
+  │ n\\nStacktrace:\\n    at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRunnable.checkMatchingSlot (LocalDistribut
+  │ or.java:573)\\n    at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRunnable.run (LocalDistributor.java:555)\\n  
+  │   at org.openqa.selenium.concurrent.GuardedRunnable.lambda$guard$0 (GuardedRunnable.java:35)\\n    at java.util.concurrent.Executors$Runn
+  │ ableAdapter.call (Executors.java:572)\\n    at java.util.concurrent.FutureTask.runAndReset (FutureTask.java:358)\\n    at java.util.concu
+  │ rrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run (ScheduledThreadPoolExecutor.java:305)\\n    at java.util.concurrent.ThreadPool
+  │ Executor.runWorker (ThreadPoolExecutor.java:1144)\\n    at java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:64
+  │ 2)\\n    at java.lang.Thread.run (Thread.java:1583)"},{"url":"KP/63180923","error":"Message: Could not start a new session. No nodes supp
+  │ ort the capabilities in the request \\nHost info: host: '2310c00400fc', ip: '172.17.0.3'\\nBuild info: version: '4.35.0', revision: '1c58
+  │ e5028b'\\nSystem info: os.name: 'Linux', os.arch: 'amd64', os.version: '6.6.87.2-microsoft-standard-WSL2', java.version: '21.0.8'\\nDrive
+  │ r info: driver.version: unknown; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubles
+  │ hooting/errors#sessionnotcreatedexception\\nStacktrace:\\n    at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRu
+  │ nnable.checkMatchingSlot (LocalDistributor.java:573)\\n    at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRunna
+  │ ble.run (LocalDistributor.java:555)\\n    at org.openqa.selenium.concurrent.GuardedRunnable.lambda$guard$0 (GuardedRunnable.java:35)\\n  
+  │   at java.util.concurrent.Executors$RunnableAdapter.call (Executors.java:572)\\n    at java.util.concurrent.FutureTask.runAndReset (Futur
+  │ eTask.java:358)\\n    at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run (ScheduledThreadPoolExecutor.java:305)\
+  │ \n    at java.util.concurrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.java:1144)\\n    at java.util.concurrent.ThreadPoolExecuto
+  │ r$Worker.run (ThreadPoolExecutor.java:642)\\n    at java.lang.Thread.run (Thread.java:1583)"},{"url":"KP/53398033","error":"Message: Coul
+  │ d not start a new session. No nodes support the capabilities in the request \\nHost info: host: '2310c00400fc', ip: '172.17.0.3'\\nBuild 
+  │ info: version: '4.35.0', revision: '1c58e5028b'\\nSystem info: os.name: 'Linux', os.arch: 'amd64', os.version: '6.6.87.2-microsoft-standa
+  │ rd-WSL2', java.version: '21.0.8'\\nDriver info: driver.version: unknown; For documentation on this error, please visit: https://www.selen
+  │ ium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception\\nStacktrace:\\n    at org.openqa.selenium.grid.distrib
+  │ utor.local.LocalDistributor$NewSessionRunnable.checkMatchingSlot (LocalDistributor.java:573)\\n    at org.openqa.selenium.grid.distributo
+  │ r.local.LocalDistributor$NewSessionRunnable.run (LocalDistributor.java:555)\\n    at org.openqa.selenium.concurrent.GuardedRunnable.lambd
+  │ a$guard$0 (GuardedRunnable.java:35)\\n    at java.util.concurrent.Executors$RunnableAdapter.call (Executors.java:572)\\n    at java.util.
+  │ concurrent.FutureTask.runAndReset (FutureTask.java:358)\\n    at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run
+  │  (ScheduledThreadPoolExecutor.java:305)\\n    at java.util.concurrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.java:1144)\\n    a
+  │ t java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:642)\\n    at java.lang.Thread.run (Thread.java:1583)"},{"u
+  │ rl":"KP/65754692","error":"Message: Could not start a new session. No nodes support the capabilities in the request \\nHost info: host: '
+  │ 2310c00400fc', ip: '172.17.0.3'\\nBuild info: version: '4.35.0', revision: '1c58e5028b'\\nSystem info: os.name: 'Linux', os.arch: 'amd64'
+  │ , os.version: '6.6.87.2-microsoft-standard-WSL2', java.version: '21.0.8'\\nDriver info: driver.version: unknown; For documentation on thi
+  │ s error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception\\nStacktrace:\\
+  │ n    at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRunnable.checkMatchingSlot (LocalDistributor.java:573)\\n  
+  │   at org.openqa.selenium.grid.distributor.local.LocalDistributor$NewSessionRunnable.run (LocalDistributor.java:555)\\n    at org.openqa.s
+  │ elenium.concurrent.GuardedRunnable.lambda$guard$0 (GuardedRunnable.java:35)\\n    at java.util.concurrent.Executors$RunnableAdapter.call 
+  │ (Executors.java:572)\\n    at java.util.concurrent.FutureTask.runAndReset (FutureTask.java:358)\\n    at java.util.concurrent.ScheduledTh
+  │ readPoolExecutor$ScheduledFutureTask.run (ScheduledThreadPoolExecutor.java:305)\\n    at java.util.concurrent.ThreadPoolExecutor.runWorke
+  │ r (ThreadPoolExecutor.java:1144)\\n    at java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:642)\\n    at java.
+  │ lang.Thread.run (Thread.java:1583)"},{"url":"KP/49513399","error":"Message: Could not start a new session. No nodes support the capabilit
+  │ ies `... 4106 more characters
+  └
+
+POST jobs/scrape (NS)
+  │ 'response body:', `{"platform_slug":"NS","sc_fn":"fetch_all_pages_set","total":100386,"success":73176,"failed":2
+  │ ,"skipped":27208,"errors_sample":[{"url":"NS/3612583","error":"argument of type 'NoneType' is not iterable"},{"url":"NS/3630774","error":
+  │ "argument of type 'NoneType' is not iterable"}],"duration_ms":10701573}`
+
+
+
+
