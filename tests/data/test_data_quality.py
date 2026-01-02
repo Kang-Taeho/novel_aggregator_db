@@ -118,10 +118,7 @@ def collect_quality(session: Session, collection : Collection) -> dict:
 
     # ---------------- 3).2 중복 : 같은 플랫폼 중복 소설  ----------------
     mysql_query = text("""
-                    SELECT 
-                        slug,
-                        novel_id,
-                        COUNT(*) AS cnt
+                    SELECT slug,novel_id,COUNT(*) AS cnt
                     FROM novel_sources AS a
                         JOIN platforms AS b 
                         ON a.platform_id = b.id
@@ -188,7 +185,7 @@ def render_markdown(pds_dict : dict, total_num_dict : dict) -> str:
     lines.append("## 결측치 검사")
     lines.append(pds_dict["missing_pd"].to_markdown(index=False))
     lines.append("")
-    lines.append("## 중복 비율")
+    lines.append("## 중복 검사")
     lines.append("### description 중복")
     lines.append(pds_dict["dup_des_pd"].to_markdown(index=False))
     lines.append("")

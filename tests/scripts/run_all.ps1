@@ -9,3 +9,4 @@ npx newman run tests\postman\novel-aggregator.postman_collection.json `
   --reporters cli,junit,htmlextra  `
   --reporter-junit-export tests\reports\newman-results.xml `
   --reporter-htmlextra-export tests/reports/newman-report.html;
+
