@@ -116,7 +116,7 @@ def collect_quality(session: Session, collection : Collection) -> dict:
     docs = collection.aggregate(mongo_pipeline)
     pds_dict["dup_des_pd"] = pd.DataFrame(list(docs))
 
-    # ---------------- 3).2 중복 : 같은 플랫폼 중복 소설  ----------------
+    # ---------------- 3).2 중복 : 동일 데이터 중복  ----------------
     mysql_query = text("""
                     SELECT slug,novel_id,COUNT(*) AS cnt
                     FROM novel_sources AS a
@@ -128,7 +128,7 @@ def collect_quality(session: Session, collection : Collection) -> dict:
     rows = session.execute(mysql_query).mappings().all()
     pds_dict["dup_plf_pd"] = pd.DataFrame(rows)
 
-    # ---------------- 4) Rule 위반 : mysql,mongodb 제약  ----------------
+    # ---------------- 4) 정합성 Rule 위반 : mysql,mongodb 제약  ----------------
     mysql_query = text("""
                         SELECT mongo_doc_id, 
                         title AS MySQL_title , 
@@ -189,10 +189,10 @@ def render_markdown(pds_dict : dict, total_num_dict : dict) -> str:
     lines.append("### description 중복")
     lines.append(pds_dict["dup_des_pd"].to_markdown(index=False))
     lines.append("")
-    lines.append("### 같은 플랫폼 중복 소설")
+    lines.append("### 동일 데이터 중복")
     lines.append(pds_dict["dup_plf_pd"].to_markdown(index=True))
     lines.append("")
-    lines.append("## Rule 위반 (매핑 안 된 것들)")
+    lines.append("## 정합성 Rule 위반")
     lines.append("### MySQL만 존재")
     lines.append(pds_dict["mysql_only_pd"].reset_index(drop=True).to_markdown(index=True))
     lines.append("")
