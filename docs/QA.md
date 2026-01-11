@@ -141,25 +141,74 @@ Selenium WebDriver 병렬 실행용 컨테이너를 4개로 제한해 안정성�
 	- (mysql) `view_count` , `episode_count` : 음수/0 검사
     - (mongo) `description` : NULL 검사 
 - 결측치 검사
-	- (mysql) `job_runs`의 total/ failed, skipped 비율
+	- (mysql) job_runs의 `total`/ `failed` / `skipped` 비율
+    - 단 , skipped은 19세 이상 소설의 경우가 포함
 - 중복 비율
 	- (mongo) `description` 중복 비율
 	- (mysql) 같은 플랫폼 같은 소설 중복 비율 
 - Rule 위반 목록
-	- (mysql/mongo)  `novels` / `novel_meta` 1:1 매칭 위반 목록
+	- (MySQL)`novels` ↔ (Mongo)`novel_meta` 1:1 매칭 위반 목록
 
-### 대응 방안
-- 이상치 통계 
-	- NULL / 0 / 음수 값이 있을 경우 해당 소설 목록 검사
-- 결측치 검사
-	- failed : 실패 원인 분석
-    - skipped : 19세 이상 소설은 개인정보로 인해 접근 불가(개인정보/정책) <br>
-       단, 전 검사 대비 skipped가 급증하면 소설 목록/필터 조건을 점검
-- 중복 비율
-	- description 중복 : 시시리즈/단행본 등으로 발생 가능하나 저장공간을 과도하게 차지하면 삭제/정책 조정 고려
-	- 같은 플랫폼 같은 소설 중복 : 해당 소설 데이터 삭제 및 원인 파악
-- Rule 위반 목록
-	- Rule 위반 데이터 : 해당 소설 데이터 삭제 및 원인 파악
+### Quality 임계값 및 대응 방안
+#### 1) 이상치
+**임계값**
+- NULL 비율 > 0  
+  - (MySQL) `author_name`, `genre`, `mongo_doc_id`  
+  - (MongoDB) `description`
+- 비정상 값 존재  
+  - (MySQL) `view_count`, `episode_count` <= 0
+
+**대응방안**
+- 플랫폼 DOM/응답 포맷 변경 여부 확인 
+- 이상치 발생 레코드(소설) 리스트 추출 및 케이스 분류
+
+#### 2) 결측치
+**임계값**
+- `failed_count` > 0 
+- `skipped_count`가 이전 실행 대비 급증  
+  - 단, `skipped`에는 **19세 이상 접근 제한 케이스** 포함
+
+**영향**
+- 불필요한 크롤링 시도 증가 → 실행시간/리소스 비용 증가
+
+**대응방안**
+- **Failed**
+  1. 실패 레코드 단위 주요 원인 분석 (파싱 실패/타임아웃/차단 등)
+  2. 재시도 정책 적용 또는 예외 케이스 룰 보강
+- **Skipped**
+  1. skipped 사유 분류(19+ 제한 / 접근 불가 / 정책 제외)
+  2. 19세 이상 컨텐츠는 **Pre-filtering** 적용  
+     - Selenium/WebDriver 및 HTTP Request 단계에서 사전 제외
+
+#### 3) 중복(Deduplication / Uniqueness)
+**임계값**
+- (MongoDB) `description` > (중복 허용 데이터 용량)
+    - 단, `description`에는 **같은 소설의 시리즈/단행본 등** 포함
+- (MySQL) 동일 데이터 중복 (동일 플랫폼 내 동일 소설에 관한 데이터)
+
+**영향**
+- 저장 용량 증가 및 인덱스/쿼리 성능 저하
+- 검색/추천/집계에서 중복 노출로 품질 저하
+
+**대응방안**
+- **Description**
+  1. 중복 패턴 분석 : 시리즈/단행본, 회차 합본 등 중복 유형 분류
+  2. 중복제거 Rule: 대표 레코드 유지 + 나머지 제거/병합
+- **동일 데이터**
+  1. 중복 레코드 단위 주요 원인 분석 (테스트 데이터/중복 코드 실행/ DB 제약 문제 등)
+  2. 예외 케이스 룰 보강
+
+#### 4) 정합성 Rule 위반
+**임계값**
+- (MySQL) `novels` ↔ (MongoDB) `novel_meta` 간 1:1 매핑 불일치 발생 시 
+
+**영향**
+- 엔티티 조인 실패 → 다운스트림 테이블/서빙 데이터 품질 저하
+- 데이터 누락/중복으로 인한 파이프라인 오류 가능
+
+**대응방안**
+- 주요 원인 분속 (키 매핑 오류, 적재 순서 문제, 중복 적재, 삭제 누락 등)
+- 잘못된 레코드 정정/삭제 후 재적재
 
 ### 리포트 생성 위치
 * Markdown : `tests/reports/data_quality_report.md`
